@@ -118,7 +118,7 @@ Update `tests/Api/ApiHarnessTest` to use a test-only route instead of `/wp/v2/us
 AC: tests asserting each restriction; `rm_client` capability list equals `['read']`.
 
 **T2.6 App shell.** Rewrite `/app/*` → `templates/app.php` (no theme, no `wp_head` from theme; enqueue only built SPA + nonce + boot data), login page `/app/login`.
-SPA: auth guard, account switcher, layout with owner sidebar and renter bottom nav, i18n, RTL, nonce refresh on `rest_cookie_invalid_nonce`, global error toast with request_id.
+SPA base path comes from boot data (no hardcoded `/app/`; WordPress may be in a subdirectory); locale comes from `/me` settings. SPA: auth guard, account switcher, layout with owner sidebar and renter bottom nav, i18n, RTL, nonce refresh on `rest_cookie_invalid_nonce`, global error toast with request_id.
 AC: E2E: owner logs in and sees empty dashboard in Arabic; renter sees renter home; client hitting /wp-admin is redirected.
 WF: RenterLogin, Main (shell only).
 
