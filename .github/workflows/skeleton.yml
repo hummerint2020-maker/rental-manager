@@ -102,6 +102,16 @@ jobs:
       - name: Build frontend
         if: steps.scaffold.outputs.enabled == 'true'
         run: npm --prefix frontend run build
+      - name: Verify committed frontend build is current
+        if: steps.scaffold.outputs.enabled == 'true'
+        run: |
+          git diff --exit-code -- build/
+          status="$(git status --porcelain --untracked-files=all -- build/)"
+          if [ -n "$status" ]; then
+            printf '%s\n' "$status"
+            echo 'Rebuild and commit the complete build/ directory.' >&2
+            exit 1
+          fi
       - name: Install Chromium for frontend tests
         if: steps.scaffold.outputs.enabled == 'true'
         run: npm --prefix frontend exec -- playwright install --with-deps chromium

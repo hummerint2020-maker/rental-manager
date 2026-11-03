@@ -4,7 +4,6 @@ Agents add open questions here. Ahmed answers inline and moves resolved items to
 
 | Task | Question | Options | Recommended default | Answer |
 | --- | --- | --- | --- | --- |
-| T0.5 | Which supporting frontend dependencies are needed beyond the named stack, and how should tests run? | Browser tests with Playwright; add a separate DOM/unit-test runner | Use the stack's Playwright against the production build, with TypeScript declaration packages and the official @tailwindcss/vite integration as dev dependencies. No extra runtime library or test framework. npm test requires a preceding build and Chromium install | Pending; reversible tooling default applied |
 | T0.4 | The plan requires frontend build/test before T0.5 creates its manifest. How should CI handle the current placeholder without starting T0.5? | Gate the placeholder explicitly; implement the scaffold early; leave CI failing | Report the .gitkeep-only state explicitly, test that gate, and require npm ci/build/test automatically once package.json exists. Missing lockfiles/scripts or orphan source files fail | Pending; reversible CI default applied |
 | T0.3 | WordPress 6.4's standard test bootstrap uses removed PHPUnit 9 APIs, while our fixed stack requires PHPUnit 10. Which bridge should the harness use? | Official installer, hook helpers and factories with a project PHPUnit 10 transactional base; downgrade PHPUnit; patch upstream classes | Keep PHPUnit 10, reuse the official test-library installer/helpers/factories without loading the legacy WP_UnitTestCase layer; no upstream patches or extra dependency | Pending; reversible harness default applied |
 | T0.3 | Production account/membership migrations are scheduled for Phases 1–2. Where should World store its minimal two-account identity fixtures now? | Test-only rm_test_* tables; introduce production migrations early | Use test-only InnoDB tables with settings, memberships and renter links, composite account foreign keys; replace adapters as production migrations arrive | Pending; reversible fixture default applied |
@@ -14,6 +13,11 @@ Agents add open questions here. Ahmed answers inline and moves resolved items to
 | T0.1 | Strauss 0.31 has Windows drive-path errors. Where should dependency prefixing run? | Linux/WSL; maintain Windows compatibility patches | Build isolated dependencies on Linux. Windows may use `composer install --no-scripts` for PHP checks; do not ship until the Linux prefixing and activation smoke checks pass | Pending; reversible default applied |
 
 ## Resolved
+
+T0.5 — Ahmed approved Playwright as the only frontend test framework. Use it against the
+production build and for frontend guard tests; no separate DOM/unit-test runner. TypeScript
+declarations and the official @tailwindcss/vite integration remain development dependencies.
+Run the build and install Chromium before npm test.
 
 T0.1 review follow-up: the root requirement now uses sodium instead of GD. mPDF itself still
 requires GD transitively. Keep its declared platform requirement intact; evaluate that constraint
