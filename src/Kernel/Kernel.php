@@ -11,5 +11,6 @@ final class Kernel
 {
     public static function boot(): void
     {
+        Health\AdminPage::register();
     }
 }

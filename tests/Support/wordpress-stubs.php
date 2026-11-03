@@ -28,7 +28,8 @@ function load_plugin_textdomain(string $domain, bool $deprecated, string $path):
     return true;
 }
 
-function wp_die(string $message): void
+/** @param array<string, mixed> $args */
+function wp_die(string $message, string $title = '', array $args = []): void
 {
     $GLOBALS['die_message'] = $message;
     throw new RuntimeException('Activation refused.');

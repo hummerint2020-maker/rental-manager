@@ -1,0 +1,9 @@
+<?php
+
+// Static-only declarations for the unprefixed Action Scheduler public functions used here.
+/** @param array<mixed> $args */
+function as_enqueue_async_action(string $hook, array $args = [], string $group = '', bool $unique = false): int {}
+/** @param array<mixed> $args */
+function as_unschedule_action(string $hook, array $args = [], string $group = ''): int|null {}
+/** @param array<mixed> $args */
+function as_has_scheduled_action(string $hook, array $args = [], string $group = ''): bool {}

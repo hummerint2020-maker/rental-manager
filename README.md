@@ -7,7 +7,7 @@ Arabic-first (RTL) single-page app for owners and renters.
 ## Status
 
 T0.1 repository skeleton, T0.2 architecture checks, T0.3 test harness, T0.4 CI and T0.5 frontend
-scaffold are implemented. The SPA has an Arabic RTL test page; business modules and WordPress
+scaffold and T0.6 hosting diagnostics/PDF spike are implemented. The SPA has an Arabic RTL test page; business modules and WordPress
 app routing are not implemented yet.
 
 ## Development
@@ -48,4 +48,5 @@ For the Node 24 frontend setup, production build and browser tests, see
 - [`docs/PLAN.md`](docs/PLAN.md) — phased implementation plan (Phase 0 → 11)
 - [`docs/CODEX_PROMPTS.md`](docs/CODEX_PROMPTS.md) — prompts for running each phase with Codex
 - [`docs/QUESTIONS.md`](docs/QUESTIONS.md) — open questions and decisions
+- [`docs/HOSTING.md`](docs/HOSTING.md) — System Health, PDF spike and pending [AHMED] hosting checklist
 - `docs/wireframes/` — screen wireframes (PNG exports)

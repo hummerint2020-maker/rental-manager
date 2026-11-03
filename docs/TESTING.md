@@ -76,3 +76,13 @@ The CI workflow validates this harness on PHP 8.1/8.3 with MySQL 8.0/MariaDB 10.
 See [CI.md](CI.md) for the matrix and retained release smoke checks. The T0.5 frontend gate
 now enables build and four Playwright tests of the production bundle. Run the build, install
 Chromium and then `npm --prefix frontend test`; see [FRONTEND.md](FRONTEND.md) for commands.
+
+T0.6 adds unit coverage for host thresholds, MariaDB version parsing and private-file canary
+failure/cleanup cases. Integration tests exercise disposable DB probes on an independent connection,
+admin capability/nonce checks and Action Scheduler canary execution/timeout. Each backend CI cell
+also generates the synthetic Arabic PDF using prefixed mPDF. Real-hosting HTTP protection and
+visual Arabic shaping remain [AHMED] checks in [HOSTING.md](HOSTING.md).
+
+The System Health PDF download is covered by integration tests for admin capability, POST-only
+access, its own nonce, prefixed mPDF output/headers, workspace cleanup and safe errors. Informational
+web-server/WordPress rows are tested for their info-only status and escaped rendering.

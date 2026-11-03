@@ -3,6 +3,108 @@ msgstr ""
 "Language: ar\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
+msgid "Download sample PDF"
+msgstr "تحميل ملف PDF التجريبي"
+
+msgid "Information"
+msgstr "معلومة"
+
+msgid "Not reported"
+msgstr "غير متاح"
+
+msgid "Web server software"
+msgstr "برنامج خادم الويب"
+
+msgid "WordPress version"
+msgstr "إصدار ووردبريس"
+
+msgid "You are not allowed to download the sample PDF."
+msgstr "غير مسموح لك بتحميل ملف PDF التجريبي."
+
+msgid "PDF downloads require POST."
+msgstr "يتطلب تحميل ملف PDF طلب POST."
+
+msgid "The sample PDF could not be generated. Check hosting requirements and try again."
+msgstr "تعذر إنشاء ملف PDF التجريبي. تحقّق من متطلبات الاستضافة وحاول مجددًا."
+
+msgid "Rental Manager"
+msgstr "مدير الإيجارات"
+
+msgid "System Health"
+msgstr "سلامة النظام"
+
+msgid "You are not allowed to view System Health."
+msgstr "غير مسموح لك بعرض سلامة النظام."
+
+msgid "Run hosting diagnostics. Temporary database tables and files are removed; a scheduler canary may stay pending."
+msgstr "شغّل فحوص الاستضافة. تُحذف الجداول والملفات المؤقتة؛ وقد يظل اختبار المجدول قيد الانتظار."
+
+msgid "Run checks"
+msgstr "تشغيل الفحوص"
+
+msgid "Check"
+msgstr "الفحص"
+
+msgid "Status"
+msgstr "الحالة"
+
+msgid "Details"
+msgstr "التفاصيل"
+
+msgid "Pass"
+msgstr "ناجح"
+
+msgid "Fail"
+msgstr "فشل"
+
+msgid "Pending"
+msgstr "قيد الانتظار"
+
+msgid "PHP 8.1 or later"
+msgstr "PHP بإصدار 8.1 أو أحدث"
+
+msgid "Sodium extension"
+msgstr "إضافة Sodium"
+
+msgid "Mbstring extension"
+msgstr "إضافة Mbstring"
+
+msgid "GD or Imagick extension"
+msgstr "إضافة GD أو Imagick"
+
+msgid "Memory limit at least 256 MB"
+msgstr "حد الذاكرة ٢٥٦ ميجابايت على الأقل"
+
+msgid "WP-Cron disabled for system cron"
+msgstr "تعطيل WP-Cron لاستخدام مجدول النظام"
+
+msgid "Database diagnostic could not complete"
+msgstr "تعذر إكمال فحص قاعدة البيانات"
+
+msgid "MySQL 8.0 or MariaDB 10.6 or later"
+msgstr "MySQL بإصدار 8.0 أو MariaDB بإصدار 10.6 أو أحدث"
+
+msgid "Default storage engine is InnoDB"
+msgstr "محرك التخزين الافتراضي هو InnoDB"
+
+msgid "Foreign keys reject invalid references and probe tables are removed"
+msgstr "المفاتيح الخارجية ترفض المراجع غير الصالحة مع حذف جداول الاختبار"
+
+msgid "Transaction rollback removes the probe row"
+msgstr "التراجع عن المعاملة يحذف صف الاختبار"
+
+msgid "Private storage HTTP canary"
+msgstr "اختبار حماية التخزين الخاص عبر HTTP"
+
+msgid "Action Scheduler canary execution"
+msgstr "تنفيذ اختبار Action Scheduler"
+
+msgid "Action Scheduler canary timed out"
+msgstr "انتهت مهلة اختبار Action Scheduler"
+
+msgid "Canary queued; run checks again within two minutes"
+msgstr "أُضيف الاختبار إلى قائمة الانتظار؛ أعد تشغيل الفحوص خلال دقيقتين"
+
 msgid "Rental Manager requires PHP 8.1 or later and WordPress 6.4 or later."
 msgstr "يتطلب مدير الإيجارات PHP بإصدار 8.1 أو أحدث ووردبريس بإصدار 6.4 أو أحدث."
 
