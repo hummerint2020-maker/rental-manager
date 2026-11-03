@@ -1,7 +1,8 @@
 # T0.6 hosting spike and checklist
 
 This task adds diagnostics, not production storage, financial receipts or cron configuration.
-The WordPress/PHP policy update in T0.7 is separate: bootstrap guards and the CI matrix are unchanged.
+T0.7 requires WordPress 7.0+ and pins integration/activation CI to 7.1.4. Production targets PHP 8.4;
+the six backend cells cover PHP 8.1/8.4/8.5 against MySQL 8.0/MariaDB 10.6.
 
 ## System Health
 
@@ -9,9 +10,9 @@ Open **Rental Manager → System Health** as a WordPress System Admin (`manage_o
 Owners, managers and renters have the `rm_client` WordPress role with `read` only and cannot
 access this screen. The callback checks capability again. GET only displays a form.
 **Run checks** requires a nonce-protected POST because diagnostics write disposable canaries.
-No public REST endpoint is registered. Two informational rows show the escaped web-server
-software reported by PHP and the WordPress version, including on passive GET. Neither is a
-pass/fail check; a proxy may hide the actual web-server configuration.
+No public REST endpoint is registered. Two rows show the escaped web-server
+software reported by PHP and the WordPress version, including on passive GET. The server row is
+informational (a proxy may hide the actual server); WordPress passes only at version 7.0 or later.
 
 The twelve results check PHP >= 8.1, sodium, mbstring, GD **or** Imagick, PHP memory >= 256 MB
 (unlimited `-1` also passes), `DISABLE_WP_CRON === true`, MySQL >= 8.0 / MariaDB >= 10.6,
@@ -54,6 +55,10 @@ renders the same synthetic `PdfSample` HTML and streams `rental-manager-sample.p
 with `application/pdf`, `no-store` and `nosniff`. A random workspace under the uploads base is
 removed after rendering, including font caches; no PDF is stored at a public URL. Errors show
 a translated message without exception details. This button does not run the other health probes.
+The rendering-only error handler consumes E_DEPRECATED/E_USER_DEPRECATED so dependency notices on
+PHP 8.4/8.5 cannot corrupt or fail the PDF. Real warnings still become exceptions and a safe error.
+The prior handler is always restored; runtime/global error_reporting and PHPUnit warning policy
+are not relaxed. The mPDF factory is injected only for tests of these rendering conditions.
 
 For development and CI, keep the CLI spike in the full repository checkout:
 

@@ -40,7 +40,7 @@ final class BootstrapTest extends TestCase
     /** @return list<array{string}> */
     public static function unsupportedWordPressVersions(): array
     {
-        return [['6.3.9'], ['5.9'], ['']];
+        return [['5.9'], ['6.0'], ['6.4'], ['6.9.99'], ['7.0-beta1'], ['']];
     }
 
     #[DataProvider('unsupportedWordPressVersions')]
@@ -81,7 +81,7 @@ final class BootstrapTest extends TestCase
     public function testDirectAccessDoesNothing(): void
     {
         $this->installAutoloaders(true);
-        $result = $this->probe('6.4', 'admin', 'direct');
+        $result = $this->probe('7.1.4', 'admin', 'direct');
         self::assertFalse($result['booted']);
         self::assertSame('', $result['notice']);
         self::assertSame(0, $result['scheduler_loads']);
@@ -90,7 +90,7 @@ final class BootstrapTest extends TestCase
     /** @return list<array{string}> */
     public static function supportedWordPressVersions(): array
     {
-        return [['6.4'], ['6.4.0'], ['6.8']];
+        return [['7.0'], ['7.0.0'], ['7.1.4']];
     }
 
     #[DataProvider('supportedWordPressVersions')]
@@ -108,7 +108,7 @@ final class BootstrapTest extends TestCase
     {
         $this->installAutoloaders();
         $this->installScheduler();
-        $result = $this->probe('6.4', 'admin', 'repeat');
+        $result = $this->probe('7.1.4', 'admin', 'repeat');
         self::assertTrue($result['booted']);
         self::assertSame(1, $result['scheduler_loads']);
     }
@@ -131,14 +131,14 @@ final class BootstrapTest extends TestCase
         self::assertTrue($result['deactivated']);
         self::assertSame(0, $result['scheduler_loads']);
         self::assertSame(
-            'Rental Manager requires PHP 8.1 or later and WordPress 6.4 or later.',
+            'Rental Manager requires PHP 8.1 or later and WordPress 7.0 or later.',
             $result['die_message']
         );
     }
 
     public function testActivationRejectsMissingDependencies(): void
     {
-        $result = $this->probe('6.4', 'admin', 'activate');
+        $result = $this->probe('7.1.4', 'admin', 'activate');
         self::assertTrue($result['deactivated']);
         self::assertStringContainsString('missing its dependencies', (string) $result['die_message']);
     }
@@ -147,7 +147,7 @@ final class BootstrapTest extends TestCase
     {
         $this->installAutoloaders();
         $this->installScheduler();
-        $result = $this->probe('6.4', 'admin', 'activate');
+        $result = $this->probe('7.1.4', 'admin', 'activate');
         self::assertTrue($result['booted']);
         self::assertFalse($result['deactivated']);
         self::assertNull($result['die_message']);
@@ -182,7 +182,7 @@ final class BootstrapTest extends TestCase
     /**
      * @return array{booted: bool, notice: string, scheduler_loads: int, deactivated: bool, die_message: ?string}
      */
-    private function probe(string $version = '6.4', string $role = 'admin', string $mode = 'wordpress'): array
+    private function probe(string $version = '7.1.4', string $role = 'admin', string $mode = 'wordpress'): array
     {
         $process = proc_open(
             [

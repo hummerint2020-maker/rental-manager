@@ -105,8 +105,8 @@ msgstr "انتهت مهلة اختبار Action Scheduler"
 msgid "Canary queued; run checks again within two minutes"
 msgstr "أُضيف الاختبار إلى قائمة الانتظار؛ أعد تشغيل الفحوص خلال دقيقتين"
 
-msgid "Rental Manager requires PHP 8.1 or later and WordPress 6.4 or later."
-msgstr "يتطلب مدير الإيجارات PHP بإصدار 8.1 أو أحدث ووردبريس بإصدار 6.4 أو أحدث."
+msgid "Rental Manager requires PHP 8.1 or later and WordPress 7.0 or later."
+msgstr "يتطلب مدير الإيجارات PHP بإصدار 8.1 أو أحدث ووردبريس بإصدار 7.0 أو أحدث."
 
 msgid "Rental Manager is missing its dependencies. Install a complete release or run composer install."
 msgstr "مكتبات مدير الإيجارات غير مكتملة. ثبّت حزمة إصدار كاملة أو شغّل composer install."

@@ -9,6 +9,10 @@ use Throwable;
 
 final class PdfDownload
 {
+    public function __construct(private readonly PdfRenderer $renderer = new PdfRenderer())
+    {
+    }
+
     public function send(): void
     {
         $response = $this->response();
@@ -38,7 +42,7 @@ final class PdfDownload
             if ($uploads['error'] || !wp_mkdir_p($uploads['basedir'])) {
                 throw new RuntimeException('PDF workspace unavailable.');
             }
-            $body = PdfRenderer::render($uploads['basedir']);
+            $body = $this->renderer->render($uploads['basedir']);
         } catch (Throwable $error) {
             wp_die(
                 esc_html__(

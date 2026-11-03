@@ -3,9 +3,13 @@
 declare(strict_types=1);
 
 // Standalone process: never load real WordPress or the test runner's autoloader.
-$root = $argv[1];
-$GLOBALS['wp_version'] = $argv[2];
-$GLOBALS['can_manage'] = $argv[3] === 'admin';
+$arguments = $_SERVER['argv'] ?? [];
+if (PHP_SAPI !== 'cli' || count($arguments) !== 5) {
+    throw new RuntimeException('The bootstrap probe needs four CLI arguments.');
+}
+$root = $arguments[1];
+$GLOBALS['wp_version'] = $arguments[2];
+$GLOBALS['can_manage'] = $arguments[3] === 'admin';
 $GLOBALS['hooks'] = [];
 $GLOBALS['booted'] = false;
 $GLOBALS['scheduler_loads'] = 0;
@@ -15,17 +19,17 @@ $GLOBALS['die_message'] = null;
 
 require __DIR__ . '/wordpress-stubs.php';
 
-if ($argv[4] !== 'direct') {
+if ($arguments[4] !== 'direct') {
     require __DIR__ . '/wordpress-entry.php';
 }
 
 require $root . '/rental-manager.php';
 
-if ($argv[4] === 'repeat') {
+if ($arguments[4] === 'repeat') {
     require $root . '/rental-manager.php';
 }
 
-if ($argv[4] === 'activate') {
+if ($arguments[4] === 'activate') {
     try {
         ($GLOBALS['activation_hook'])();
     } catch (RuntimeException $exception) {

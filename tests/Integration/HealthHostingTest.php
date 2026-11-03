@@ -22,7 +22,7 @@ final class HealthHostingTest extends DatabaseTestCase
         self::assertSame('سلامة النظام', $catalog->translate('System Health'));
         self::assertSame('مدير الإيجارات', $catalog->translate('Rental Manager'));
         self::assertSame('ناجح', $catalog->translate('Pass'));
-        $guard = 'Rental Manager requires PHP 8.1 or later and WordPress 6.4 or later.';
+        $guard = 'Rental Manager requires PHP 8.1 or later and WordPress 7.0 or later.';
         self::assertNotSame($guard, $catalog->translate($guard));
     }
 

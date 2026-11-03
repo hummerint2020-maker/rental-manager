@@ -12,7 +12,7 @@ app routing are not implemented yet.
 
 ## Development
 
-Requires PHP 8.1+ with sodium and mbstring, Composer 2, and WordPress 6.4+ (single site).
+Requires PHP 8.1+ with sodium and mbstring, Composer 2, and WordPress 7.0+ (single site).
 The current mPDF dependency also requires GD; the GD/Imagick hosting decision is tracked for T0.6.
 
 ```sh
@@ -29,8 +29,10 @@ Use Linux (or WSL) for dependency prefixing. On native Windows, Strauss 0.31 has
 errors; `composer install --no-scripts` still permits PHP checks but does not produce a deployable plugin.
 
 The CI workflow builds on Linux, runs the PHP checks, assembles a runtime-only package
-with the original Action Scheduler, and activates that package on a disposable WordPress 6.4/MySQL 8
-installation. It validates the T0.3 integration/API harness across PHP 8.1/8.3 and MySQL 8.0/MariaDB 10.6.
+with the original Action Scheduler, and activates that package on disposable WordPress 7.1.4 installations.
+`.github/workflows/ci.yml` validates PHP 8.1/8.4/8.5 against MySQL 8.0 and MariaDB 10.6 (six cells).
+The WordPress release is pinned once in that workflow's `WP_VERSION`. WordPress 6.x activation is refused
+with the bundled localized requirement message. System Health checks the WordPress 7.0 minimum too.
 Frontend CI now installs locked dependencies, builds assets and runs Chromium tests. See
 [`docs/CI.md`](docs/CI.md) for CI behavior, [`docs/TESTING.md`](docs/TESTING.md) for installation and suites, and
 [`docs/ARCHITECTURE_CHECKS.md`](docs/ARCHITECTURE_CHECKS.md) for the enforced boundaries and regression fixtures.

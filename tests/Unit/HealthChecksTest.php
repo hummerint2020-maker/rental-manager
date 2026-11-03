@@ -10,13 +10,17 @@ use RentalManager\Kernel\Health\PdfSample;
 
 final class HealthChecksTest extends TestCase
 {
-    public function testServerAndWordPressRowsAreInformationalOnly(): void
+    public function testWordPressVersionIsCheckedWhileServerRemainsInformational(): void
     {
         $rows = Checks::information('nginx/1.26', '6.4');
         self::assertSame(['web_server', 'wordpress'], array_column($rows, 'id'));
-        self::assertSame(['info', 'info'], array_column($rows, 'status'));
+        self::assertSame(['info', 'fail'], array_column($rows, 'status'));
         self::assertSame(['nginx/1.26', '6.4'], array_column($rows, 'detail'));
-        self::assertSame(['info', 'info'], array_column(Checks::information('', ''), 'status'));
+        self::assertSame(['info', 'fail'], array_column(Checks::information('', ''), 'status'));
+        foreach (['7.0', '7.0.0', '7.1.4'] as $version) {
+            self::assertSame('pass', Checks::information('Apache', $version)[1]->status);
+        }
+        self::assertSame('fail', Checks::information('Apache', '7.0-beta1')[1]->status);
     }
 
     public function testMemoryThresholdAndUnlimitedLimit(): void

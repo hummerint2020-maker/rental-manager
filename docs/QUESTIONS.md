@@ -17,6 +17,11 @@ Agents add open questions here. Ahmed answers inline and moves resolved items to
 
 ## Resolved
 
+T0.7 verification (no new decision): the pinned WordPress 7.1.4 test bootstrap and abstract test
+case still call parseTestMethodAnnotations, which is unavailable in our PHPUnit 10 path. Retain
+the existing T0.3 bridge/default, with the upstream evidence and reproduction in TESTING.md.
+The T0.3 pending decision above is not treated as owner approval by this verification.
+
 T0.5 — Ahmed approved Playwright as the only frontend test framework. Use it against the
 production build and for frontend guard tests; no separate DOM/unit-test runner. TypeScript
 declarations and the official @tailwindcss/vite integration remain development dependencies.

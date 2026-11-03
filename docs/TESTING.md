@@ -21,14 +21,14 @@ Use a disposable database: the official WordPress installer resets the WordPress
 export RM_ALLOW_TEST_DB_RESET=1
 export WP_CORE_DIR=/tmp/rm-integration-core
 export WP_TESTS_DIR=/tmp/rm-integration-tests
-bash bin/install-wp-tests.sh rm_test_rental_manager root test-password 127.0.0.1:3306 6.4
+bash bin/install-wp-tests.sh rm_test_rental_manager root test-password 127.0.0.1:3306 7.1.4
 composer test:integration
 ```
 
 The installer is a Bash wrapper around bin/install-wp-tests.php; native Windows developers may
-invoke that PHP file with the same arguments. The explicit version defaults to 6.4. Core is downloaded
+invoke that PHP file with the same arguments. The explicit version defaults to 7.1.4. Core is downloaded
 from wordpress.org and the matching test-library includes/data from WordPress/wordpress-develop
-(for example, core version 6.4 maps to the develop repository's 6.4.0 release tag).
+(7.1.4 uses exactly the develop repository's 7.1.4 release tag; a two-part version maps to its .0 tag).
 Archives are extracted only under the selected directories. Database names must start with rm_test_
 and reset opt-in is required both during provisioning and when the integration runner starts.
 
@@ -39,8 +39,13 @@ No installed service, production account, plugin schema migration or hosting con
 
 ## PHPUnit 10 bridge
 
-WordPress 6.4's standard includes/bootstrap.php loads a PHPUnit-9 compatibility layer using classes
-removed in PHPUnit 10. We do not load or patch that layer. tests/bootstrap-integration.php instead:
+Rechecked the official **7.1.4** test bootstrap, `phpunit6/compat.php` and `abstract-testcase.php`.
+The bootstrap still requires Yoast Polyfills 1.x and loads the legacy compatibility layer.
+That layer and the abstract test case still call `PHPUnit\\Util\\Test::parseTestMethodAnnotations()`.
+Running its `PHPUnit_Util_Test::getTickets()` with our locked PHPUnit 10.5.66 reproduced
+`Call to undefined method PHPUnit\\Util\\Test::parseTestMethodAnnotations()`.
+The official path therefore cannot replace our bridge yet. No PHPUnit downgrade, dependency,
+upstream patch or weakened warning setting was introduced. tests/bootstrap-integration.php:
 
 1. Loads the generated test config and verifies the disposable database opt-in.
 2. Runs the official includes/install.php in a child PHP process.
@@ -72,9 +77,10 @@ connection/cleanup lifecycle. The smoke test inserts a WordPress user and a fixt
 back, clears caches, and verifies neither remains. Another test verifies cross-account FK rejection.
 The API suite dispatches a real WordPress REST request as an account's fixture user.
 
-The CI workflow validates this harness on PHP 8.1/8.3 with MySQL 8.0/MariaDB 10.6.
+The CI workflow validates this harness on WordPress 7.1.4 with PHP 8.1/8.4/8.5 and
+MySQL 8.0/MariaDB 10.6. `WP_VERSION` is defined once in `.github/workflows/ci.yml`.
 See [CI.md](CI.md) for the matrix and retained release smoke checks. The T0.5 frontend gate
-now enables build and four Playwright tests of the production bundle. Run the build, install
+enables build and seven Playwright tests of the production bundle/direction guard. Run the build, install
 Chromium and then `npm --prefix frontend test`; see [FRONTEND.md](FRONTEND.md) for commands.
 
 T0.6 adds unit coverage for host thresholds, MariaDB version parsing and private-file canary
@@ -85,4 +91,16 @@ visual Arabic shaping remain [AHMED] checks in [HOSTING.md](HOSTING.md).
 
 The System Health PDF download is covered by integration tests for admin capability, POST-only
 access, its own nonce, prefixed mPDF output/headers, workspace cleanup and safe errors. Informational
-web-server/WordPress rows are tested for their info-only status and escaped rendering.
+server/version rows are tested for escaped rendering and their respective info/check status.
+
+In T0.7 the WordPress row becomes pass/fail at 7.0; the web-server row remains informational.
+PDF download tests emit E_USER_DEPRECATED during real prefixed mPDF construction and exercise
+the E_DEPRECATED handler branch: the download stays valid with no diagnostic bytes in its body.
+A separate E_USER_WARNING test still fails safely. These two tests enable E_ALL only for their
+rendering scope and restore the prior level, since PHPUnit masks native warning output itself.
+Deprecation consumption is scoped to rendering;
+the previous error handler is restored, and both PHPUnit configurations retain failOnWarning=true.
+
+Upstream evidence: [7.1.4 bootstrap](https://github.com/WordPress/wordpress-develop/blob/7.1.4/tests/phpunit/includes/bootstrap.php),
+[compatibility layer](https://github.com/WordPress/wordpress-develop/blob/7.1.4/tests/phpunit/includes/phpunit6/compat.php),
+[abstract test case](https://github.com/WordPress/wordpress-develop/blob/7.1.4/tests/phpunit/includes/abstract-testcase.php).
