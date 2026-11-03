@@ -72,5 +72,5 @@ connection/cleanup lifecycle. The smoke test inserts a WordPress user and a fixt
 back, clears caches, and verifies neither remains. Another test verifies cross-account FK rejection.
 The API suite dispatches a real WordPress REST request as an account's fixture user.
 
-The existing single-job smoke workflow validates this harness once on PHP 8.1/MySQL 8. The full
-PHP/database matrix and frontend CI belong to T0.4 and are not introduced by this task.
+The CI workflow validates this harness on PHP 8.1/8.3 with MySQL 8.0/MariaDB 10.6.
+See [CI.md](CI.md) for the matrix, retained release smoke checks and pre-T0.5 frontend gate.
