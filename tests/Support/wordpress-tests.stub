@@ -1,0 +1,11 @@
+<?php
+// Static-analysis declarations only. Never required by the test runner.
+class WP_UnitTest_Factory {
+    public WP_UnitTest_Factory_For_User $user;
+}
+class WP_UnitTest_Factory_For_User {
+    /** @param array<string, mixed> $args */
+    public function create(array $args = []): int|WP_Error {}
+}
+function tests_reset__SERVER(): void {}
+function tests_add_filter(string $tag, callable $callback, int $priority = 10, int $accepted_args = 1): void {}

@@ -3,6 +3,8 @@ includes:
 
 parameters:
     level: 6
+    scanFiles:
+        - tests/Support/wordpress-tests.stub
     paths:
         - src
         - rental-manager.php
