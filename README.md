@@ -6,7 +6,33 @@ Arabic-first (RTL) single-page app for owners and renters.
 
 ## Status
 
-Planning complete, implementation not started.
+T0.1 repository skeleton implemented. Business modules and the SPA are not implemented yet.
+
+## Development
+
+Requires PHP 8.1+ with sodium and mbstring, Composer 2, and WordPress 6.4+ (single site).
+The current mPDF dependency also requires GD; the GD/Imagick hosting decision is tracked for T0.6.
+
+```sh
+composer install
+composer check
+```
+
+Composer runs Strauss after installation to generate `vendor-prefixed/`. The plugin loads that
+isolated autoloader, including the project namespace, and directly loads Action Scheduler's
+original loader so its shared version registry works alongside other plugins. It does not load
+Composer's unprefixed autoloader or development libraries. Complete releases must include both
+`vendor-prefixed/` and the entire `vendor/woocommerce/action-scheduler/` package (including its license).
+Use Linux (or WSL) for dependency prefixing. On native Windows, Strauss 0.31 has upstream path
+errors; `composer install --no-scripts` still permits PHP checks but does not produce a deployable plugin.
+
+The T0.1 GitHub smoke check builds on Linux, runs the PHP checks, assembles a runtime-only package
+with the original Action Scheduler, and activates that package on a disposable WordPress 6.4/MySQL 8
+installation. The full architecture policies, WordPress PHPUnit
+harness, and CI version matrix remain T0.2–T0.4. Empty suites are intentional at this stage.
+
+`bin/smoke-wordpress.php` is for the fresh CI database only. Never run it on real hosting.
+Compile Arabic gettext changes with `msgfmt languages/rental-manager-ar.po -o languages/rental-manager-ar.mo`.
 
 ## Docs
 

@@ -1,0 +1,58 @@
+name: T0.1 skeleton smoke checks
+
+on:
+  push:
+    branches: [main, 'codex/t0.1-repository-skeleton']
+  pull_request:
+    paths:
+      - '**.php'
+      - 'composer.*'
+      - '*.xml*'
+      - '*.neon'
+      - 'deptrac.yaml'
+      - 'languages/**'
+      - '.github/workflows/skeleton.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  skeleton:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-password
+          MYSQL_DATABASE: rental_manager_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ptest-password"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: gd, mbstring, mysqli, sodium, zip
+          coverage: none
+          tools: composer:v2
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer validate --strict
+      - run: composer check
+      - name: Assemble runtime release with the original Action Scheduler
+        run: |
+          runtime="$RUNNER_TEMP/release/rental-manager"
+          mkdir -p "$runtime/vendor/woocommerce"
+          cp rental-manager.php "$runtime/"
+          cp -R src languages vendor-prefixed "$runtime/"
+          cp -R vendor/woocommerce/action-scheduler "$runtime/vendor/woocommerce/"
+          test ! -e "$runtime/vendor-prefixed/woocommerce/action-scheduler"
+      - name: Install clean WordPress 6.4 and activate the plugin
+        env:
+          RM_TEST_WP_DIR: ${{ runner.temp }}/wordpress
+          RM_TEST_DB_PASSWORD: test-password
+        run: |
+          curl --fail --silent --show-error --location https://wordpress.org/wordpress-6.4.tar.gz | tar -xz -C "$RUNNER_TEMP"
+          ln -s "$RUNNER_TEMP/release/rental-manager" "$RM_TEST_WP_DIR/wp-content/plugins/rental-manager"
+          php bin/smoke-wordpress.php
