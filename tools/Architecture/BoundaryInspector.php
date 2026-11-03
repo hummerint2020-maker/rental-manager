@@ -97,7 +97,7 @@ final class BoundaryInspector
                 $path
             );
         $pure = in_array($layer, ['Domain', 'Application', 'Api'], true)
-            || (bool) preg_match('#^src/Kernel/(Money|Time|Id)/#', $path);
+            || (bool) preg_match('#^src/Kernel/(Money|Time|Id|Tenancy|Errors)/#', $path);
         $nodes = $this->parser->parse($source) ?? [];
         if ($layer !== 'module.php' && !(new NodeFinder())->findFirstInstanceOf($nodes, Stmt\Namespace_::class)) {
             return [$path . ':1: Production declarations require a namespace matching their source directory.'];
@@ -127,7 +127,11 @@ final class BoundaryInspector
                 if ($node instanceof Node\Name && isset($this->wordpressSymbols[strtolower($node->toString())])) {
                     $reason = 'WordPress symbols are restricted to Infrastructure: ' . $node->toString() . '.';
                 }
-                if ($node instanceof String_ && isset($this->wordpressSymbols[strtolower($node->value)])) {
+                if (
+                    $node instanceof String_
+                    && (str_contains($node->value, '_') || str_starts_with(strtolower($node->value), 'wp'))
+                    && isset($this->wordpressSymbols[strtolower(ltrim($node->value, '\\'))])
+                ) {
                     $reason = 'WordPress callback symbols are restricted to Infrastructure: ' . $node->value . '.';
                 }
             }
@@ -150,7 +154,7 @@ final class BoundaryInspector
             if ($node instanceof String_) {
                 if (
                     $pure && preg_match(
-                        '/^\s*(SELECT\b.*\bFROM|INSERT\s+INTO|UPDATE\b.*\bSET|DELETE\s+FROM|CREATE\s+TABLE)\b/is',
+                        '/^\s*(SELECT\b.*\bFROM|INSERT\s+INTO|UPDATE\b.*\bSET|DELETE\s+FROM|CREATE\s+TABLE)\b/s',
                         $node->value
                     )
                 ) {
@@ -168,7 +172,7 @@ final class BoundaryInspector
                 }
                 if (
                     $module === 'Reporting'
-                    && preg_match('/^\s*(INSERT|UPDATE|DELETE|REPLACE|ALTER|CREATE|DROP|TRUNCATE)\b/i', $node->value)
+                    && preg_match('/^\s*(INSERT|UPDATE|DELETE|REPLACE|ALTER|CREATE|DROP|TRUNCATE)\b/', $node->value)
                 ) {
                     $reason = 'Reporting SQL must be read-only.';
                 }

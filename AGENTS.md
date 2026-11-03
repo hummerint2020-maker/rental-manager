@@ -59,7 +59,7 @@ rental-manager.php            # bootstrap only: version check, autoload, Kernel:
 src/
   Kernel/                     # shared infrastructure, NOT a business module
     Container/ Clock/ Money/ Id/ Time/ Db/ Migrations/ Outbox/ Jobs/
-    Sequences/ Tenancy/ Http/ Security/ Storage/ Audit/ I18n/ Health/
+    Sequences/ Tenancy/ Errors/ Http/ Security/ Storage/ Audit/ I18n/ Health/
   Modules/
     Platform/        # accounts, plans, subscriptions, entitlements, overrides, access mode
     Identity/        # memberships, invitations, roles→permissions, support grants, authorization
@@ -99,6 +99,8 @@ docs/
 4. `Presentation` maps HTTP ⇄ Application commands/queries. **No business rules in controllers.**
 5. A module never reads or writes another module's tables and never imports another module's
    `Domain`, `Application` or `Infrastructure`. Cross-module calls go through `Modules\<Other>\Api\*`.
+   Public Api signatures expose only Api DTOs and KernelShared types (Money, Time, Id, Tenancy,
+   Errors), never Domain entities. Facades map Domain objects to DTOs before returning them.
 6. Synchronous cross-module calls are allowed **inside the same Unit of Work** when atomicity requires it,
    only through `Api`, and only in the directions allowed in `deptrac.yaml`. Allowed directions:
    `Leasing → Billing, Units, Renters` · `Billing → Documents` · `Expenses → Billing, Documents` ·

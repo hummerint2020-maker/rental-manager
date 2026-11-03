@@ -70,6 +70,14 @@ final class DeptracPolicyTest extends TestCase
             'RentalManager\\Kernel\\Clock\\Clock' => true,
             'RentalManager\\Kernel\\Money\\Money' => false,
             'RentalManager\\Kernel\\Container\\Container' => false,
+            'RentalManager\\Kernel\\Db\\Connection' => false,
+            'RentalManager\\Kernel\\Db\\UnitOfWork' => true,
+            'RentalManager\\Kernel\\Http\\Router' => true,
+            'RentalManager\\Kernel\\Storage\\Storage' => true,
+            'RentalManager\\Kernel\\Tenancy\\AccountContext' => false,
+            'RentalManager\\Kernel\\Errors\\DomainRuleException' => false,
+            'RentalManager\\Kernel\\Errors\\NotFound' => false,
+            'RentalManager\\Kernel\\Errors\\Conflict' => false,
             'RentalManager\\Modules\\Units\\Domain\\Unit' => false,
             'RentalManager\\Modules\\Units\\Application\\Repository' => true,
             'RentalManager\\Modules\\Units\\Infrastructure\\Repository' => false,
@@ -93,7 +101,23 @@ final class DeptracPolicyTest extends TestCase
             ['Infrastructure', 'Modules\\Billing\\Domain\\Charge', true],
             ['Api', 'Modules\\Billing\\Infrastructure\\Repository', true],
             ['Application', 'Modules\\Leasing\\Api\\Query\\CurrentContract', false],
+            ['Domain', 'Kernel\\Container\\Container', true],
+            ['Domain', 'Kernel\\Db\\Connection', true],
+            ['Domain', 'Kernel\\Db\\UnitOfWork', true],
+            ['Domain', 'Kernel\\Http\\Router', true],
+            ['Domain', 'Kernel\\Storage\\Storage', true],
+            ['Application', 'Kernel\\Db\\UnitOfWork', false],
+            ['Application', 'Kernel\\Http\\Router', false],
+            ['Application', 'Kernel\\Storage\\Storage', false],
         ];
+        foreach (['Api', 'Domain', 'Application', 'Infrastructure', 'Presentation'] as $layer) {
+            $sharedTypes = [
+                'Tenancy\\AccountContext', 'Errors\\DomainRuleException', 'Errors\\NotFound', 'Errors\\Conflict',
+            ];
+            foreach ($sharedTypes as $type) {
+                $edges[] = [$layer, 'Kernel\\' . $type, false];
+            }
+        }
         $expected = [];
         foreach ($edges as $number => [$layer, $dependency, $forbidden]) {
             $caller = 'RentalManager\\Modules\\Units\\' . $layer . '\\Probe' . $number;

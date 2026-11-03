@@ -43,6 +43,12 @@ final class BoundaryInspectorTest extends TestCase
         yield 'include' => ['Units/Domain', 'require "adapter.php";', 'Native I/O'];
         yield 'shell' => ['Units/Domain', '`whoami`;', 'Native I/O'];
         yield 'pure Kernel' => ['Kernel/Money', 'file_get_contents("rate.txt");', 'Native I/O'];
+        yield 'pure tenancy I/O' => ['Kernel/Tenancy', 'file_get_contents("account.txt");', 'Native I/O'];
+        yield 'pure errors I/O' => ['Kernel/Errors', 'mail("a", "b", "c");', 'Native I/O'];
+        yield 'pure tenancy WordPress' => ['Kernel/Tenancy', 'get_current_user_id();', 'WordPress'];
+        yield 'pure errors WordPress' => ['Kernel/Errors', 'get_option("error_message");', 'WordPress'];
+        yield 'uppercase SQL' => ['Units/Domain', '$sql = "SELECT id FROM rm_units";', 'SQL belongs'];
+        yield 'translate function is still forbidden' => ['Units/Domain', 'translate("message");', 'WordPress'];
     }
 
     #[DataProvider('violations')]
@@ -79,6 +85,11 @@ final class BoundaryInspectorTest extends TestCase
         ];
         yield 'Kernel connection' => ['Kernel/Db', 'global $wpdb; $wpdb->query("SELECT 1");'];
         yield 'pure PHP exception' => ['Units/Domain', 'throw new \\RuntimeException("Invalid unit");'];
+        yield 'English reporting prompt' => ['Reporting/Infrastructure', '$message = "Delete this filter";'];
+        foreach (['Domain', 'Application', 'Api'] as $layer) {
+            yield 'English prompt in ' . $layer => ['Units/' . $layer, '$message = "Select a unit from the list";'];
+            yield 'plain translate in ' . $layer => ['Units/' . $layer, '$label = "translate";'];
+        }
     }
 
     #[DataProvider('allowedCode')]
