@@ -26,7 +26,7 @@ Target hosting: shared hosting first, VPS later.
 
 ## Stack (fixed)
 
-- PHP **8.1+**, MySQL **8.0+** or MariaDB **10.6+**, **InnoDB** and `utf8mb4` only.
+- PHP **8.1+** (hosting offers 8.1–8.5; production runs **8.4**; CI covers 8.1, 8.4 and 8.5), MySQL **8.0+** or MariaDB **10.6+**, **InnoDB** and `utf8mb4` only.
 - WordPress **7.0+** (production runs **7.1.x**; keep CI on the current 7.1 release). Single site. **No Multisite.**
   Rental Manager is a SaaS on one install we control, so only current WordPress versions are supported.
 - Composer. Bundled vendor libraries are namespace-prefixed with **Strauss** into `RentalManager\Vendor\`,
