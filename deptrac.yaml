@@ -1,11 +1,593 @@
-# T0.1 baseline; module and WordPress boundary rules are implemented in T0.2.
+# T0.2: each module owns its layers; cross-module calls target only permitted Api layers.
+# Native effects, WordPress function calls, raw SQL and $wpdb are checked by bin/check-architecture.php.
 deptrac:
   paths:
     - ./src
+  cache_file: .deptrac.cache
+  analyser:
+    types: [class, function, function_call, file, use, class_superglobal, function_superglobal]
   layers:
-    - name: Kernel
+    - name: Php
+      collectors:
+        - type: php_internal
+          value: '.*'
+    - name: WordPress
       collectors:
         - type: classLike
-          value: ^RentalManager\\Kernel\\.*
+          value: '^(WP_.*|wpdb|Walker.*|Requests.*|IXR_.*)$'
+    - name: Vendor
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^(RentalManager\\Vendor\\|ActionScheduler).*'
+    - name: KernelContracts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Kernel\\'
+    - name: KernelValues
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Kernel\\(Money|Time|Id)\\'
+    - name: KernelInfrastructure
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Kernel\\(Db|Migrations|Outbox|Jobs|Sequences|Storage|Audit|Health|Http|Security|I18n)\\'
+          must_not:
+            - type: layer
+              value: 'KernelContracts'
+            - type: layer
+              value: 'KernelValues'
+    - name: Kernel
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Kernel\\'
+          must_not:
+            - type: layer
+              value: 'KernelContracts'
+            - type: layer
+              value: 'KernelValues'
+            - type: layer
+              value: 'KernelInfrastructure'
+    - name: Platform.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Platform\\Api\\'
+    - name: Platform.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Platform\\Domain\\'
+    - name: Platform.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Platform\\Application\\'
+    - name: Platform.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Platform\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Platform.ApplicationPorts'
+    - name: Platform.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Platform\\Infrastructure\\'
+    - name: Platform.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Platform\\Presentation\\'
+    - name: Platform.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Platform/module\.php$'
+    - name: Identity.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Identity\\Api\\'
+    - name: Identity.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Identity\\Domain\\'
+    - name: Identity.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Identity\\Application\\'
+    - name: Identity.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Identity\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Identity.ApplicationPorts'
+    - name: Identity.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Identity\\Infrastructure\\'
+    - name: Identity.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Identity\\Presentation\\'
+    - name: Identity.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Identity/module\.php$'
+    - name: Settings.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Settings\\Api\\'
+    - name: Settings.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Settings\\Domain\\'
+    - name: Settings.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Settings\\Application\\'
+    - name: Settings.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Settings\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Settings.ApplicationPorts'
+    - name: Settings.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Settings\\Infrastructure\\'
+    - name: Settings.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Settings\\Presentation\\'
+    - name: Settings.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Settings/module\.php$'
+    - name: Units.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Units\\Api\\'
+    - name: Units.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Units\\Domain\\'
+    - name: Units.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Units\\Application\\'
+    - name: Units.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Units\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Units.ApplicationPorts'
+    - name: Units.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Units\\Infrastructure\\'
+    - name: Units.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Units\\Presentation\\'
+    - name: Units.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Units/module\.php$'
+    - name: Renters.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Renters\\Api\\'
+    - name: Renters.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Renters\\Domain\\'
+    - name: Renters.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Renters\\Application\\'
+    - name: Renters.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Renters\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Renters.ApplicationPorts'
+    - name: Renters.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Renters\\Infrastructure\\'
+    - name: Renters.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Renters\\Presentation\\'
+    - name: Renters.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Renters/module\.php$'
+    - name: Leasing.Api
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Leasing\\Api\\'
+          must_not:
+            - type: layer
+              value: Leasing.ApiQuery
+    - name: Leasing.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Leasing\\Domain\\'
+    - name: Leasing.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Leasing\\Application\\'
+    - name: Leasing.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Leasing\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Leasing.ApplicationPorts'
+    - name: Leasing.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Leasing\\Infrastructure\\'
+    - name: Leasing.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Leasing\\Presentation\\'
+    - name: Leasing.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Leasing/module\.php$'
+    - name: Billing.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Billing\\Api\\'
+    - name: Billing.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Billing\\Domain\\'
+    - name: Billing.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Billing\\Application\\'
+    - name: Billing.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Billing\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Billing.ApplicationPorts'
+    - name: Billing.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Billing\\Infrastructure\\'
+    - name: Billing.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Billing\\Presentation\\'
+    - name: Billing.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Billing/module\.php$'
+    - name: Expenses.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Expenses\\Api\\'
+    - name: Expenses.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Expenses\\Domain\\'
+    - name: Expenses.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Expenses\\Application\\'
+    - name: Expenses.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Expenses\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Expenses.ApplicationPorts'
+    - name: Expenses.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Expenses\\Infrastructure\\'
+    - name: Expenses.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Expenses\\Presentation\\'
+    - name: Expenses.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Expenses/module\.php$'
+    - name: Maintenance.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Maintenance\\Api\\'
+    - name: Maintenance.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Maintenance\\Domain\\'
+    - name: Maintenance.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Maintenance\\Application\\'
+    - name: Maintenance.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Maintenance\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Maintenance.ApplicationPorts'
+    - name: Maintenance.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Maintenance\\Infrastructure\\'
+    - name: Maintenance.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Maintenance\\Presentation\\'
+    - name: Maintenance.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Maintenance/module\.php$'
+    - name: Documents.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Documents\\Api\\'
+    - name: Documents.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Documents\\Domain\\'
+    - name: Documents.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Documents\\Application\\'
+    - name: Documents.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Documents\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Documents.ApplicationPorts'
+    - name: Documents.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Documents\\Infrastructure\\'
+    - name: Documents.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Documents\\Presentation\\'
+    - name: Documents.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Documents/module\.php$'
+    - name: Notifications.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Notifications\\Api\\'
+    - name: Notifications.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Notifications\\Domain\\'
+    - name: Notifications.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Notifications\\Application\\'
+    - name: Notifications.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Notifications\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Notifications.ApplicationPorts'
+    - name: Notifications.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Notifications\\Infrastructure\\'
+    - name: Notifications.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Notifications\\Presentation\\'
+    - name: Notifications.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Notifications/module\.php$'
+    - name: Activity.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Activity\\Api\\'
+    - name: Activity.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Activity\\Domain\\'
+    - name: Activity.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Activity\\Application\\'
+    - name: Activity.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Activity\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Activity.ApplicationPorts'
+    - name: Activity.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Activity\\Infrastructure\\'
+    - name: Activity.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Activity\\Presentation\\'
+    - name: Activity.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Activity/module\.php$'
+    - name: Reporting.Api
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Reporting\\Api\\'
+    - name: Reporting.Domain
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Reporting\\Domain\\'
+    - name: Reporting.ApplicationPorts
+      collectors:
+        - type: interface
+          value: '^RentalManager\\Modules\\Reporting\\Application\\'
+    - name: Reporting.Application
+      collectors:
+        - type: bool
+          must:
+            - type: classLike
+              value: '^RentalManager\\Modules\\Reporting\\Application\\'
+          must_not:
+            - type: layer
+              value: 'Reporting.ApplicationPorts'
+    - name: Reporting.Infrastructure
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Reporting\\Infrastructure\\'
+    - name: Reporting.Presentation
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Reporting\\Presentation\\'
+    - name: Reporting.Wiring
+      collectors:
+        - type: directory
+          value: 'src/Modules/Reporting/module\.php$'
+    - name: Leasing.ApiQuery
+      collectors:
+        - type: classLike
+          value: '^RentalManager\\Modules\\Leasing\\Api\\Query\\'
   ruleset:
-    Kernel: []
+    Php: []
+    WordPress: ['Php', 'WordPress']
+    Vendor: ['Php', 'Vendor', 'WordPress']
+    KernelContracts: ['Php', 'KernelValues']
+    KernelValues: ['Php', 'KernelContracts']
+    KernelInfrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'WordPress', 'Vendor']
+    Kernel: ['Php', 'KernelContracts', 'KernelValues', 'KernelInfrastructure']
+    Platform.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Platform.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Platform.Domain']
+    Platform.Application: ['Php', 'KernelContracts', 'KernelValues', 'Platform.Domain', 'Platform.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Platform.Api: ['Php', 'KernelContracts', 'KernelValues', 'Platform.Domain', 'Platform.Application', 'Platform.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Platform.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Platform.Domain', 'Platform.Application', 'Platform.ApplicationPorts', 'Platform.Api', 'Settings.Api', 'Identity.Api']
+    Platform.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Platform.Application', 'Platform.ApplicationPorts', 'Platform.Api', 'Settings.Api', 'Identity.Api']
+    Platform.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Platform.Api', 'Platform.Domain', 'Platform.ApplicationPorts', 'Platform.Application', 'Platform.Infrastructure', 'Platform.Presentation']
+    Identity.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Identity.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Identity.Domain']
+    Identity.Application: ['Php', 'KernelContracts', 'KernelValues', 'Identity.Domain', 'Identity.ApplicationPorts', 'Settings.Api']
+    Identity.Api: ['Php', 'KernelContracts', 'KernelValues', 'Identity.Domain', 'Identity.Application', 'Identity.ApplicationPorts', 'Settings.Api']
+    Identity.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Identity.Domain', 'Identity.Application', 'Identity.ApplicationPorts', 'Identity.Api', 'Settings.Api']
+    Identity.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Identity.Application', 'Identity.ApplicationPorts', 'Identity.Api', 'Settings.Api']
+    Identity.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Identity.Api', 'Identity.Domain', 'Identity.ApplicationPorts', 'Identity.Application', 'Identity.Infrastructure', 'Identity.Presentation']
+    Settings.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Settings.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Settings.Domain']
+    Settings.Application: ['Php', 'KernelContracts', 'KernelValues', 'Settings.Domain', 'Settings.ApplicationPorts', 'Identity.Api']
+    Settings.Api: ['Php', 'KernelContracts', 'KernelValues', 'Settings.Domain', 'Settings.Application', 'Settings.ApplicationPorts', 'Identity.Api']
+    Settings.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Settings.Domain', 'Settings.Application', 'Settings.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Settings.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Settings.Application', 'Settings.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Settings.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Settings.Api', 'Settings.Domain', 'Settings.ApplicationPorts', 'Settings.Application', 'Settings.Infrastructure', 'Settings.Presentation']
+    Units.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Units.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Units.Domain']
+    Units.Application: ['Php', 'KernelContracts', 'KernelValues', 'Units.Domain', 'Units.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Leasing.ApiQuery']
+    Units.Api: ['Php', 'KernelContracts', 'KernelValues', 'Units.Domain', 'Units.Application', 'Units.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Leasing.ApiQuery']
+    Units.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Units.Domain', 'Units.Application', 'Units.ApplicationPorts', 'Units.Api', 'Settings.Api', 'Identity.Api', 'Leasing.ApiQuery']
+    Units.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Units.Application', 'Units.ApplicationPorts', 'Units.Api', 'Settings.Api', 'Identity.Api', 'Leasing.ApiQuery']
+    Units.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Units.Api', 'Units.Domain', 'Units.ApplicationPorts', 'Units.Application', 'Units.Infrastructure', 'Units.Presentation']
+    Renters.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Renters.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Renters.Domain']
+    Renters.Application: ['Php', 'KernelContracts', 'KernelValues', 'Renters.Domain', 'Renters.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Renters.Api: ['Php', 'KernelContracts', 'KernelValues', 'Renters.Domain', 'Renters.Application', 'Renters.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Renters.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Renters.Domain', 'Renters.Application', 'Renters.ApplicationPorts', 'Renters.Api', 'Settings.Api', 'Identity.Api']
+    Renters.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Renters.Application', 'Renters.ApplicationPorts', 'Renters.Api', 'Settings.Api', 'Identity.Api']
+    Renters.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Renters.Api', 'Renters.Domain', 'Renters.ApplicationPorts', 'Renters.Application', 'Renters.Infrastructure', 'Renters.Presentation']
+    Leasing.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Leasing.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Leasing.Domain']
+    Leasing.Application: ['Php', 'KernelContracts', 'KernelValues', 'Leasing.Domain', 'Leasing.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Billing.Api', 'Units.Api', 'Renters.Api']
+    Leasing.Api: ['Php', 'KernelContracts', 'KernelValues', 'Leasing.Domain', 'Leasing.Application', 'Leasing.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Billing.Api', 'Units.Api', 'Renters.Api', 'Leasing.ApiQuery']
+    Leasing.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Leasing.Domain', 'Leasing.Application', 'Leasing.ApplicationPorts', 'Leasing.Api', 'Settings.Api', 'Identity.Api', 'Billing.Api', 'Units.Api', 'Renters.Api', 'Leasing.ApiQuery']
+    Leasing.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Leasing.Application', 'Leasing.ApplicationPorts', 'Leasing.Api', 'Settings.Api', 'Identity.Api', 'Billing.Api', 'Units.Api', 'Renters.Api', 'Leasing.ApiQuery']
+    Leasing.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Leasing.Api', 'Leasing.Domain', 'Leasing.ApplicationPorts', 'Leasing.Application', 'Leasing.Infrastructure', 'Leasing.Presentation', 'Leasing.ApiQuery']
+    Billing.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Billing.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Billing.Domain']
+    Billing.Application: ['Php', 'KernelContracts', 'KernelValues', 'Billing.Domain', 'Billing.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Documents.Api']
+    Billing.Api: ['Php', 'KernelContracts', 'KernelValues', 'Billing.Domain', 'Billing.Application', 'Billing.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Documents.Api']
+    Billing.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Billing.Domain', 'Billing.Application', 'Billing.ApplicationPorts', 'Billing.Api', 'Settings.Api', 'Identity.Api', 'Documents.Api']
+    Billing.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Billing.Application', 'Billing.ApplicationPorts', 'Billing.Api', 'Settings.Api', 'Identity.Api', 'Documents.Api']
+    Billing.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Billing.Api', 'Billing.Domain', 'Billing.ApplicationPorts', 'Billing.Application', 'Billing.Infrastructure', 'Billing.Presentation']
+    Expenses.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Expenses.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Expenses.Domain']
+    Expenses.Application: ['Php', 'KernelContracts', 'KernelValues', 'Expenses.Domain', 'Expenses.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Billing.Api', 'Documents.Api']
+    Expenses.Api: ['Php', 'KernelContracts', 'KernelValues', 'Expenses.Domain', 'Expenses.Application', 'Expenses.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Billing.Api', 'Documents.Api']
+    Expenses.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Expenses.Domain', 'Expenses.Application', 'Expenses.ApplicationPorts', 'Expenses.Api', 'Settings.Api', 'Identity.Api', 'Billing.Api', 'Documents.Api']
+    Expenses.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Expenses.Application', 'Expenses.ApplicationPorts', 'Expenses.Api', 'Settings.Api', 'Identity.Api', 'Billing.Api', 'Documents.Api']
+    Expenses.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Expenses.Api', 'Expenses.Domain', 'Expenses.ApplicationPorts', 'Expenses.Application', 'Expenses.Infrastructure', 'Expenses.Presentation']
+    Maintenance.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Maintenance.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Maintenance.Domain']
+    Maintenance.Application: ['Php', 'KernelContracts', 'KernelValues', 'Maintenance.Domain', 'Maintenance.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Expenses.Api', 'Documents.Api']
+    Maintenance.Api: ['Php', 'KernelContracts', 'KernelValues', 'Maintenance.Domain', 'Maintenance.Application', 'Maintenance.ApplicationPorts', 'Settings.Api', 'Identity.Api', 'Expenses.Api', 'Documents.Api']
+    Maintenance.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Maintenance.Domain', 'Maintenance.Application', 'Maintenance.ApplicationPorts', 'Maintenance.Api', 'Settings.Api', 'Identity.Api', 'Expenses.Api', 'Documents.Api']
+    Maintenance.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Maintenance.Application', 'Maintenance.ApplicationPorts', 'Maintenance.Api', 'Settings.Api', 'Identity.Api', 'Expenses.Api', 'Documents.Api']
+    Maintenance.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Maintenance.Api', 'Maintenance.Domain', 'Maintenance.ApplicationPorts', 'Maintenance.Application', 'Maintenance.Infrastructure', 'Maintenance.Presentation']
+    Documents.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Documents.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Documents.Domain']
+    Documents.Application: ['Php', 'KernelContracts', 'KernelValues', 'Documents.Domain', 'Documents.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Documents.Api: ['Php', 'KernelContracts', 'KernelValues', 'Documents.Domain', 'Documents.Application', 'Documents.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Documents.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Documents.Domain', 'Documents.Application', 'Documents.ApplicationPorts', 'Documents.Api', 'Settings.Api', 'Identity.Api']
+    Documents.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Documents.Application', 'Documents.ApplicationPorts', 'Documents.Api', 'Settings.Api', 'Identity.Api']
+    Documents.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Documents.Api', 'Documents.Domain', 'Documents.ApplicationPorts', 'Documents.Application', 'Documents.Infrastructure', 'Documents.Presentation']
+    Notifications.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Notifications.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Notifications.Domain']
+    Notifications.Application: ['Php', 'KernelContracts', 'KernelValues', 'Notifications.Domain', 'Notifications.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Notifications.Api: ['Php', 'KernelContracts', 'KernelValues', 'Notifications.Domain', 'Notifications.Application', 'Notifications.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Notifications.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Notifications.Domain', 'Notifications.Application', 'Notifications.ApplicationPorts', 'Notifications.Api', 'Settings.Api', 'Identity.Api']
+    Notifications.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Notifications.Application', 'Notifications.ApplicationPorts', 'Notifications.Api', 'Settings.Api', 'Identity.Api']
+    Notifications.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Notifications.Api', 'Notifications.Domain', 'Notifications.ApplicationPorts', 'Notifications.Application', 'Notifications.Infrastructure', 'Notifications.Presentation']
+    Activity.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Activity.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Activity.Domain']
+    Activity.Application: ['Php', 'KernelContracts', 'KernelValues', 'Activity.Domain', 'Activity.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Activity.Api: ['Php', 'KernelContracts', 'KernelValues', 'Activity.Domain', 'Activity.Application', 'Activity.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Activity.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Activity.Domain', 'Activity.Application', 'Activity.ApplicationPorts', 'Activity.Api', 'Settings.Api', 'Identity.Api']
+    Activity.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Activity.Application', 'Activity.ApplicationPorts', 'Activity.Api', 'Settings.Api', 'Identity.Api']
+    Activity.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Activity.Api', 'Activity.Domain', 'Activity.ApplicationPorts', 'Activity.Application', 'Activity.Infrastructure', 'Activity.Presentation']
+    Reporting.Domain: ['Php', 'KernelContracts', 'KernelValues']
+    Reporting.ApplicationPorts: ['Php', 'KernelContracts', 'KernelValues', 'Reporting.Domain']
+    Reporting.Application: ['Php', 'KernelContracts', 'KernelValues', 'Reporting.Domain', 'Reporting.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Reporting.Api: ['Php', 'KernelContracts', 'KernelValues', 'Reporting.Domain', 'Reporting.Application', 'Reporting.ApplicationPorts', 'Settings.Api', 'Identity.Api']
+    Reporting.Infrastructure: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'WordPress', 'Vendor', 'Reporting.Domain', 'Reporting.Application', 'Reporting.ApplicationPorts', 'Reporting.Api', 'Settings.Api', 'Identity.Api']
+    Reporting.Presentation: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Reporting.Application', 'Reporting.ApplicationPorts', 'Reporting.Api', 'Settings.Api', 'Identity.Api']
+    Reporting.Wiring: ['Php', 'KernelContracts', 'KernelValues', 'Kernel', 'KernelInfrastructure', 'Reporting.Api', 'Reporting.Domain', 'Reporting.ApplicationPorts', 'Reporting.Application', 'Reporting.Infrastructure', 'Reporting.Presentation']
+    Leasing.ApiQuery: ['Php', 'KernelContracts', 'KernelValues', 'Leasing.Domain', 'Leasing.Application', 'Leasing.ApplicationPorts', 'Leasing.Api']

@@ -8,3 +8,4 @@ parameters:
         - rental-manager.php
         - bin
         - tests
+        - tools

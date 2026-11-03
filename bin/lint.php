@@ -5,7 +5,7 @@ declare(strict_types=1);
 $root = dirname(__DIR__);
 $files = [$root . '/rental-manager.php'];
 
-foreach (['src', 'tests', 'bin', 'migrations', 'templates'] as $directory) {
+foreach (['src', 'tests', 'bin', 'tools', 'migrations', 'templates'] as $directory) {
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root . '/' . $directory));
     foreach ($iterator as $file) {
         if ($file->isFile() && $file->getExtension() === 'php') {
