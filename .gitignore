@@ -1,0 +1,13 @@
+/vendor/
+/vendor-prefixed/
+/frontend/node_modules/
+/node_modules/
+/tests/artifacts/
+/.phpunit.cache/
+.phpunit.result.cache
+/dist/
+*.zip
+.env
+.DS_Store
+.idea/
+.vscode/
