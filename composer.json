@@ -54,7 +54,7 @@
         "post-install-cmd": "@prefix-namespaces",
         "post-update-cmd": "@prefix-namespaces",
         "test:unit": "phpunit --testsuite Unit,Application,Architecture",
-        "test:integration": "phpunit --testsuite Integration,Api",
+        "test:integration": "phpunit -c phpunit.integration.xml.dist --testsuite Integration,Api",
         "test:arch": ["@php bin/check-architecture.php", "deptrac analyse --no-progress --fail-on-uncovered"],
         "stan": "phpstan analyse --no-progress",
         "cs": "phpcs",

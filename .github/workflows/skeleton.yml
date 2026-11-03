@@ -40,6 +40,14 @@ jobs:
       - run: composer install --no-interaction --prefer-dist
       - run: composer validate --strict
       - run: composer check
+      - name: Validate the T0.3 WordPress test harness on the existing MySQL service
+        env:
+          RM_ALLOW_TEST_DB_RESET: '1'
+          WP_CORE_DIR: ${{ runner.temp }}/rm-integration-core
+          WP_TESTS_DIR: ${{ runner.temp }}/rm-integration-tests
+        run: |
+          bash bin/install-wp-tests.sh rm_test_rental_manager root test-password 127.0.0.1:3306 6.4
+          composer test:integration
       - name: Assemble runtime release with the original Action Scheduler
         run: |
           runtime="$RUNNER_TEMP/release/rental-manager"
