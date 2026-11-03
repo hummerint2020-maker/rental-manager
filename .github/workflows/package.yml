@@ -1,0 +1,52 @@
+name: Package plugin
+
+# Builds an installable plugin package from a branch (default: main).
+# Download the "rental-manager-plugin" artifact from the run page and upload it in
+# WordPress -> Plugins -> Add New -> Upload Plugin (the artifact zip has rental-manager/ at its root).
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag or commit to package"
+        required: false
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: gd, mbstring, sodium, zip
+          coverage: none
+          tools: composer:v2
+      - name: Install dependencies and prefix them (Strauss)
+        run: composer install --no-interaction --prefer-dist
+      - name: Assemble runtime plugin
+        run: |
+          out="$RUNNER_TEMP/package/rental-manager"
+          mkdir -p "$out/vendor/woocommerce"
+          cp rental-manager.php "$out/"
+          cp -R src languages vendor-prefixed build "$out/"
+          cp -R vendor/woocommerce/action-scheduler "$out/vendor/woocommerce/"
+          test -f "$out/build/manifest.json"
+          test -f "$out/vendor/woocommerce/action-scheduler/action-scheduler.php"
+          test ! -e "$out/vendor-prefixed/woocommerce/action-scheduler"
+          find "$out" -name '.gitkeep' -delete
+          echo "Commit: $(git rev-parse HEAD)" > "$out/BUILD.txt"
+          du -sh "$out"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rental-manager-plugin
+          path: ${{ runner.temp }}/package
+          retention-days: 30
