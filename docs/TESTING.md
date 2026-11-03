@@ -73,4 +73,6 @@ back, clears caches, and verifies neither remains. Another test verifies cross-a
 The API suite dispatches a real WordPress REST request as an account's fixture user.
 
 The CI workflow validates this harness on PHP 8.1/8.3 with MySQL 8.0/MariaDB 10.6.
-See [CI.md](CI.md) for the matrix, retained release smoke checks and pre-T0.5 frontend gate.
+See [CI.md](CI.md) for the matrix and retained release smoke checks. The T0.5 frontend gate
+now enables build and four Playwright tests of the production bundle. Run the build, install
+Chromium and then `npm --prefix frontend test`; see [FRONTEND.md](FRONTEND.md) for commands.

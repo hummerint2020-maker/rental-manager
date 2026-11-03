@@ -14,6 +14,11 @@ Agents add open questions here. Ahmed answers inline and moves resolved items to
 
 ## Resolved
 
+T0.5 — Ahmed approved Playwright as the only frontend test framework. Use it against the
+production build and for frontend guard tests; no separate DOM/unit-test runner. TypeScript
+declarations and the official @tailwindcss/vite integration remain development dependencies.
+Run the build and install Chromium before npm test.
+
 T0.1 review follow-up: the root requirement now uses sodium instead of GD. mPDF itself still
 requires GD transitively. Keep its declared platform requirement intact; evaluate that constraint
 alongside the GD/Imagick hosting checks and PDF spike in T0.6 before promising Imagick-only hosting.

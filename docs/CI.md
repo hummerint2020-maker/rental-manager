@@ -23,26 +23,29 @@ Each combination runs Composer installation and Strauss prefixing, strict Compos
 then the preserved T0.3 installer and Integration/Api suites against real WordPress 6.4.
 
 The runtime release assembly and clean WordPress activation smoke steps are retained in every
-combination. The runtime package includes the original Action Scheduler and isolated libraries.
+combination. The runtime package includes the original Action Scheduler, isolated libraries and
+the committed frontend build; assembly requires its manifest.
 The smoke check still verifies activation, dependency isolation, Action Scheduler and Arabic gettext.
 
-## Frontend pipeline before T0.5
+## Frontend pipeline (T0.5)
 
 The frontend job uses Node 24 and runs seven dependency-free tests for its prerequisite gate.
 `bin/ci-frontend.mjs` permits only the current empty/.gitkeep placeholder to report the pre-scaffold
-state. It writes a visible notice and job summary; application build/test have not run at this stage.
-Once package.json exists, package-lock.json and non-empty build/test scripts are mandatory, then CI runs:
+state. The T0.5 package.json now enables the pipeline. A package-lock.json and non-empty build/test
+scripts are mandatory. CI runs:
 
 ```sh
 npm --prefix frontend ci
 npm --prefix frontend run build
+npm --prefix frontend exec -- playwright install --with-deps chromium
 CI=true npm --prefix frontend test
 ```
 
 Missing/invalid manifests, missing locks/scripts or source files without a manifest fail the job.
-No continue-on-error or pass-with-no-tests flags are used. T0.5 creates the real scaffold; no frontend
-application files or package dependencies are introduced by T0.4. This ordering decision is recorded
-in QUESTIONS.md. The T0.5 test script must exit after running tests in CI mode.
+No continue-on-error or pass-with-no-tests flags are used. Build checks TypeScript and emits the
+production assets/manifest. Tests launch the production preview and run four Chromium tests,
+including Arabic RTL and English LTR. The test command exits after the run. See
+[FRONTEND.md](FRONTEND.md) for local setup. The original ordering decision remains in QUESTIONS.md.
 
 Local checks for this workflow change:
 

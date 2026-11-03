@@ -6,8 +6,9 @@ Arabic-first (RTL) single-page app for owners and renters.
 
 ## Status
 
-T0.1 repository skeleton, T0.2 architecture checks, T0.3 test harness and T0.4 CI implemented. Business modules and the SPA
-are not implemented yet.
+T0.1 repository skeleton, T0.2 architecture checks, T0.3 test harness, T0.4 CI and T0.5 frontend
+scaffold are implemented. The SPA has an Arabic RTL test page; business modules and WordPress
+app routing are not implemented yet.
 
 ## Development
 
@@ -30,12 +31,15 @@ errors; `composer install --no-scripts` still permits PHP checks but does not pr
 The CI workflow builds on Linux, runs the PHP checks, assembles a runtime-only package
 with the original Action Scheduler, and activates that package on a disposable WordPress 6.4/MySQL 8
 installation. It validates the T0.3 integration/API harness across PHP 8.1/8.3 and MySQL 8.0/MariaDB 10.6.
-Frontend build/test are wired with an explicit placeholder gate until T0.5. See
+Frontend CI now installs locked dependencies, builds assets and runs Chromium tests. See
 [`docs/CI.md`](docs/CI.md) for CI behavior, [`docs/TESTING.md`](docs/TESTING.md) for installation and suites, and
 [`docs/ARCHITECTURE_CHECKS.md`](docs/ARCHITECTURE_CHECKS.md) for the enforced boundaries and regression fixtures.
 
 `bin/smoke-wordpress.php` is for the fresh CI database only. Never run it on real hosting.
 Compile Arabic gettext changes with `msgfmt languages/rental-manager-ar.po -o languages/rental-manager-ar.mo`.
+
+For the Node 24 frontend setup, production build and browser tests, see
+[`docs/FRONTEND.md`](docs/FRONTEND.md). Built assets and the Vite manifest are committed in `build/`.
 
 ## Docs
 

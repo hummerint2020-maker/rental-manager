@@ -1,0 +1,10 @@
+{
+  "appName": "Rental Manager",
+  "pageTitle": "Frontend test page",
+  "description": "The interface is ready in English, from left to right.",
+  "language": "Language",
+  "arabic": "Arabic",
+  "english": "English",
+  "home": "Home",
+  "notFound": "Page not found"
+}
