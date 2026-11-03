@@ -10,6 +10,15 @@ use RentalManager\Kernel\Health\PdfSample;
 
 final class HealthChecksTest extends TestCase
 {
+    public function testServerAndWordPressRowsAreInformationalOnly(): void
+    {
+        $rows = Checks::information('nginx/1.26', '6.4');
+        self::assertSame(['web_server', 'wordpress'], array_column($rows, 'id'));
+        self::assertSame(['info', 'info'], array_column($rows, 'status'));
+        self::assertSame(['nginx/1.26', '6.4'], array_column($rows, 'detail'));
+        self::assertSame(['info', 'info'], array_column(Checks::information('', ''), 'status'));
+    }
+
     public function testMemoryThresholdAndUnlimitedLimit(): void
     {
         foreach (['256M', '512m', '1G', '262144K', '268435456', '-1'] as $value) {

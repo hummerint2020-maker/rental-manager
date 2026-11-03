@@ -2,12 +2,12 @@
 
 namespace RentalManager\Vendor\Mpdf;
 
-/** Static-only surface of the Strauss-prefixed mPDF API used by the CLI spike. */
+/** Static-only surface of the Strauss-prefixed mPDF API used by the CLI and web spikes. */
 class Mpdf
 {
     /** @param array<string, mixed> $config */
     public function __construct(array $config = []) {}
     public function SetDirectionality(string $direction): void {}
     public function WriteHTML(string $html): void {}
-    public function Output(string $filename, string $destination): void {}
+    public function Output(string $filename, string $destination): ?string {}
 }

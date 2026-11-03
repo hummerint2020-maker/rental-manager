@@ -9,7 +9,9 @@ Open **Rental Manager → System Health** as a WordPress System Admin (`manage_o
 Owners, managers and renters have the `rm_client` WordPress role with `read` only and cannot
 access this screen. The callback checks capability again. GET only displays a form.
 **Run checks** requires a nonce-protected POST because diagnostics write disposable canaries.
-No public REST endpoint is registered.
+No public REST endpoint is registered. Two informational rows show the escaped web-server
+software reported by PHP and the WordPress version, including on passive GET. Neither is a
+pass/fail check; a proxy may hide the actual web-server configuration.
 
 The twelve results check PHP >= 8.1, sodium, mbstring, GD **or** Imagick, PHP memory >= 256 MB
 (unlimited `-1` also passes), `DISABLE_WP_CRON === true`, MySQL >= 8.0 / MariaDB >= 10.6,
@@ -45,7 +47,15 @@ diagnostic is separate from tenant jobs/context; the reversible decision is in Q
 
 ## PDF spike
 
-From a full repository/development checkout with dependencies installed:
+On real hosting, use **Download sample PDF** on System Health. This works with the runtime
+plugin release and requires no SSH, Node or copy of `bin/`. The separate POST action checks
+`manage_options` and its own nonce. It uses only the Strauss-prefixed mPDF loaded by the plugin,
+renders the same synthetic `PdfSample` HTML and streams `rental-manager-sample.pdf` as an attachment
+with `application/pdf`, `no-store` and `nosniff`. A random workspace under the uploads base is
+removed after rendering, including font caches; no PDF is stored at a public URL. Errors show
+a translated message without exception details. This button does not run the other health probes.
+
+For development and CI, keep the CLI spike in the full repository checkout:
 
 ```sh
 php bin/spike-pdf.php
@@ -54,8 +64,7 @@ php bin/spike-pdf.php
 This CLI-only script creates `tests/artifacts/receipt-sample.pdf` and a font-cache workspace in
 the ignored artifact directory. It does not boot WordPress, connect to the DB or use real data.
 The synthetic sample includes Arabic RTL, bundled mPDF fonts, mixed-direction reference/date,
-Arabic-Indic amounts and the not-a-tax-invoice disclaimer. A runtime release may exclude `bin/`;
-use a full checkout to run the spike. There are no remote image/font resources.
+Arabic-Indic amounts and the not-a-tax-invoice disclaimer. There are no remote image/font resources.
 
 Linux CI generates the PDF with the Strauss-prefixed loader in each existing backend cell.
 Native Windows development may use the unprefixed Composer loader and prints that limitation;
@@ -70,10 +79,11 @@ No Composer platform requirement is ignored or removed.
 1. Run System Health on the real hosting as System Admin. Record every result and rerun to
    observe the scheduler acknowledgement. Verify the host's external cron really invokes the
    WordPress/Action Scheduler runner when WP-Cron is disabled; the agent does not configure it.
-2. Run `php bin/spike-pdf.php` on the real hosting. Open the PDF and confirm connected Arabic
+2. Click **Download sample PDF** on System Health on the real hosting. Open it and confirm connected Arabic
    shaping, RTL layout, names, mixed Latin/date text, digits, table alignment and disclaimer.
    Record the hosting PDF/extension outcome separately from local/CI results.
-3. Report **Apache vs Nginx**, including any proxy, from the hosting configuration. Record private
+3. Record the web-server software and WordPress informational rows, then confirm **Apache vs Nginx**,
+   including any proxy, from the hosting configuration. Record private
    canary exposure or loopback failures and the required host action.
 
 Record results here or on issue #1. These human checks are pending; no real-hosting compatibility,
@@ -83,7 +93,8 @@ private-file security or production Arabic-rendering claim is made before them.
 
 `composer check` covers threshold/version cases, storage status/marker/transport/cleanup cases,
 PDF sample HTML, architecture, PHPStan, PHPCS and lint. Integration tests cover real DB cleanup
-and transaction isolation, permission/nonce checks, scheduler execution and timeout. PHPStan has
+and transaction isolation, permission/nonce/POST checks for PDF download, valid PDF body/headers,
+temporary-workspace cleanup, escaped informational rows, scheduler execution and timeout. PHPStan has
 a 1 GB analysis-only budget for the mPDF API; runtime settings and the hosting threshold stay unchanged.
 Existing frontend gates, build freshness, browser tests and release/activation smoke are preserved.
 

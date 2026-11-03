@@ -82,3 +82,7 @@ failure/cleanup cases. Integration tests exercise disposable DB probes on an ind
 admin capability/nonce checks and Action Scheduler canary execution/timeout. Each backend CI cell
 also generates the synthetic Arabic PDF using prefixed mPDF. Real-hosting HTTP protection and
 visual Arabic shaping remain [AHMED] checks in [HOSTING.md](HOSTING.md).
+
+The System Health PDF download is covered by integration tests for admin capability, POST-only
+access, its own nonce, prefixed mPDF output/headers, workspace cleanup and safe errors. Informational
+web-server/WordPress rows are tested for their info-only status and escaped rendering.

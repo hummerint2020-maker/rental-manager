@@ -10,6 +10,24 @@ use wpdb;
 
 final class Checks
 {
+    /** @return list<Result> */
+    public static function information(string $server, string $wordpress): array
+    {
+        return [
+            new Result('web_server', 'info', 'Web server software', $server),
+            new Result('wordpress', 'info', 'WordPress version', $wordpress),
+        ];
+    }
+
+    /** @return list<Result> */
+    public static function currentInformation(): array
+    {
+        return self::information(
+            (string) ($_SERVER['SERVER_SOFTWARE'] ?? ''),
+            (string) ($GLOBALS['wp_version'] ?? '')
+        );
+    }
+
     public static function memorySufficient(string $limit): bool
     {
         $limit = trim($limit);
@@ -47,7 +65,7 @@ final class Checks
                 $images[] = $label;
             }
         }
-        $results = [
+        $results = array_merge(self::currentInformation(), [
             self::result('php', version_compare(PHP_VERSION, '8.1', '>='), 'PHP 8.1 or later', PHP_VERSION),
             self::result('sodium', extension_loaded('sodium'), 'Sodium extension'),
             self::result('mbstring', extension_loaded('mbstring'), 'Mbstring extension'),
@@ -68,7 +86,7 @@ final class Checks
                 defined('DISABLE_WP_CRON') && DISABLE_WP_CRON === true,
                 'WP-Cron disabled for system cron'
             ),
-        ];
+        ]);
         try {
             // DDL and transactions use a separate connection, never the caller's transaction.
             $db = new wpdb(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);

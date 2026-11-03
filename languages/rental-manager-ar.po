@@ -3,6 +3,30 @@ msgstr ""
 "Language: ar\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
+msgid "Download sample PDF"
+msgstr "تحميل ملف PDF التجريبي"
+
+msgid "Information"
+msgstr "معلومة"
+
+msgid "Not reported"
+msgstr "غير متاح"
+
+msgid "Web server software"
+msgstr "برنامج خادم الويب"
+
+msgid "WordPress version"
+msgstr "إصدار ووردبريس"
+
+msgid "You are not allowed to download the sample PDF."
+msgstr "غير مسموح لك بتحميل ملف PDF التجريبي."
+
+msgid "PDF downloads require POST."
+msgstr "يتطلب تحميل ملف PDF طلب POST."
+
+msgid "The sample PDF could not be generated. Check hosting requirements and try again."
+msgstr "تعذر إنشاء ملف PDF التجريبي. تحقّق من متطلبات الاستضافة وحاول مجددًا."
+
 msgid "Rental Manager"
 msgstr "مدير الإيجارات"
 
