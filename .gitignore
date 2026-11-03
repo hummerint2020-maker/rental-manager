@@ -5,6 +5,7 @@
 /tests/artifacts/
 /.phpunit.cache/
 .phpunit.result.cache
+/.deptrac.cache
 /dist/
 *.zip
 .env

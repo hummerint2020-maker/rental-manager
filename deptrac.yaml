@@ -1,0 +1,11 @@
+# T0.1 baseline; module and WordPress boundary rules are implemented in T0.2.
+deptrac:
+  paths:
+    - ./src
+  layers:
+    - name: Kernel
+      collectors:
+        - type: classLike
+          value: ^RentalManager\\Kernel\\.*
+  ruleset:
+    Kernel: []

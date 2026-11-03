@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ruleset name="Rental Manager">
+    <description>PSR-12 for PHP source.</description>
+    <file>src</file>
+    <arg name="extensions" value="php"/>
+    <rule ref="PSR12"/>
+</ruleset>

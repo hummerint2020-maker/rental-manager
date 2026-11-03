@@ -1,0 +1,9 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Rental Manager requires PHP 8.1 or later and WordPress 6.4 or later."
+msgstr ""
+
+msgid "Rental Manager is missing its dependencies. Install a complete release or run composer install."
+msgstr ""
