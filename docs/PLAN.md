@@ -120,6 +120,8 @@ SPA: auth guard, account switcher, layout with owner sidebar and renter bottom n
 AC: E2E: owner logs in and sees empty dashboard in Arabic; renter sees renter home; client hitting /wp-admin is redirected.
 WF: RenterLogin, Main (shell only).
 
+**T2.0 CI coverage (from T0.4 review).** Add the current WordPress release to at least one CI matrix cell (keep 6.4 as the minimum); rename `.github/workflows/skeleton.yml` to `ci.yml`.
+
 **T2.7 Users management.** Endpoints + UI: list members, invite manager, change role (rules from DOMAIN §2), remove. WF: Settings (users card).
 
 ---
