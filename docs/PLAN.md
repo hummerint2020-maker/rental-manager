@@ -58,11 +58,13 @@ Modules register through `module.php` returning a `ModuleDefinition` (services, 
 
 **T1.2 DB connection and Unit of Work.** `Connection` wrapping `$wpdb`: `prepare`-only API, throws `DbException` on `last_error`,
 `transaction(fn)` with deadlock retry (1 retry on 1213/1205), forbids nesting. `UnitOfWork::run(fn)` collects outbox events and audit entries
-and writes them before commit. AC: integration tests: rollback on exception, nested call throws, retry on simulated deadlock.
+and writes them before commit. Transaction strategy is injectable: real `START TRANSACTION/COMMIT` in production,
+`SAVEPOINT` / `ROLLBACK TO SAVEPOINT` when the test harness's outer transaction is active (review of T0.3). AC: integration tests: rollback on exception, nested call throws, retry on simulated deadlock.
 
 **T1.3 Migrations.** `Runner` with `rm_migrations`, advisory lock (`GET_LOCK`), runs on plugin version change and on activation,
 each migration class `up()` only (no down in prod), DDL helper that always sets `ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`.
 AC: running twice is a no-op; concurrent run blocked; failed migration stops and reports.
+Add `tests/Support/CommittedDatabaseTestCase` (no wrapper transaction; cleans its own `rm_*` tables/rows and users) for DDL tests.
 
 **T1.4 Value objects.** `Money` (int minor, currency, add/sub/compare/allocate/multiplyRatio with rounding modes half_up/half_even and unit),
 `LocalDate` (Y-m-d, addMonthsClamped, daysUntil, compare), `Clock` interface + `SystemClock` + `FrozenClock`, `Ulid` generator.
@@ -79,7 +81,7 @@ diff helper; request_id + IP + actor from context. AC: integration test: audit r
 `JobRunner` building `AccountContext` from payload. Listener registration per module. AC: event dispatched only after commit; failed listener retried; context set during listener.
 
 **T1.8 Sequences.** `rm_sequences(account_id, name, period, next_value)`; `Sequences::next(name, period)` with `FOR UPDATE` inside the UoW.
-AC: concurrency integration test (two connections) never duplicates; rollback returns the number.
+AC: concurrency integration test (two connections, on `CommittedDatabaseTestCase`) never duplicates; rollback returns the number.
 
 **T1.9 REST base.** `Router` (declares route, method, permission or `public`, idempotent flag), `BaseController`, request validation helpers,
 error envelope + exception mapping (DomainRuleException→422, NotFound→404, Conflict→409...), request_id header, `no-store` headers,
@@ -110,6 +112,7 @@ create user if needed with placeholder email for mobile-only), revoke, expire. `
 **T2.5 WordPress hardening.** `rm_client` role with `read` only; block `/wp-admin` for non-admins (allow admin-ajax/admin-post); hide admin bar;
 restrict core REST `/wp/v2/users*`, `/wp/v2/media*`, `/wp/v2/comments*` to `manage_options`; block `?author=` enumeration; disable XML-RPC;
 disable Application Passwords for `rm_client`; session destroy on membership removal.
+Update `tests/Api/ApiHarnessTest` to use a test-only route instead of `/wp/v2/users/me`; replace `rm_test_*` fixture adapters in `World` with the production tables from T2.1.
 AC: tests asserting each restriction; `rm_client` capability list equals `['read']`.
 
 **T2.6 App shell.** Rewrite `/app/*` → `templates/app.php` (no theme, no `wp_head` from theme; enqueue only built SPA + nonce + boot data), login page `/app/login`.
