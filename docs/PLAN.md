@@ -27,7 +27,7 @@ Wireframe references (`WF: Approvals`) point to screenshots in `docs/wireframes/
 ## Phase 0 — Foundations
 
 **T0.1 Repository skeleton.** Create the layout from AGENTS.md, `composer.json` (PSR-4, scripts from "Commands"), Strauss config,
-`rental-manager.php` with plugin header and minimum-version guard (PHP 8.1, WP 6.4; show admin notice and do not boot if unmet).
+`rental-manager.php` with plugin header and minimum-version guard (PHP 8.1, WP 7.0 — raised from 6.4 in T0.7; show admin notice and do not boot if unmet).
 AC: plugin activates on a clean WP; `composer check` runs (empty suites pass).
 
 **T0.2 Static analysis and architecture rules.** `phpstan.neon` (level 6), `phpcs.xml` (PSR-12 for `src/`), `deptrac.yaml` encoding
@@ -48,6 +48,8 @@ Action Scheduler runner reachable, `sodium` extension, `mbstring`, GD or Imagick
 Expose results on a WP-admin page "Rental Manager → System Health" (System Admin only).
 PDF spike: `bin/spike-pdf.php` renders an Arabic RTL receipt sample with mPDF into `tests/artifacts/receipt-sample.pdf`.
 `[AHMED]` run the health page and the PDF spike on the real hosting; confirm Arabic shaping in the PDF; report Apache vs Nginx.
+
+**T0.7 Target WordPress 7.1 (production version).** Production runs WordPress 7.1.4. Raise the minimum to WordPress 7.0 (plugin header, bootstrap guard, activation hook, Arabic/English messages, bootstrap tests). Switch CI (backend matrix, integration test library and activation smoke) from 6.4 to the current 7.1 release, pinned to an explicit version (7.1.4); make the version one workflow-level variable. Re-check the PHPUnit 10 bridge from T0.3 against the 7.1 test library and simplify it if the official bootstrap now supports PHPUnit 10. Rename `.github/workflows/skeleton.yml` to `ci.yml`. Update README, docs/TESTING.md and docs/CI.md. AC: all CI cells green on WordPress 7.1.4; activating on 6.x is refused with the localized message.
 
 ---
 
@@ -95,8 +97,6 @@ AC: both run (green with zero business routes).
 ---
 
 ## Phase 2 — Identity, access, shell
-
-**T2.0 CI coverage (from T0.4 review).** Add the current WordPress release to at least one CI matrix cell (keep 6.4 as the minimum); rename `.github/workflows/skeleton.yml` to `ci.yml`.
 
 **T2.1 Accounts minimal + memberships.** Migrations for `rm_accounts`, `rm_account_settings` (defaults: Africa/Cairo, EGP, ar, `RCPT-`), `rm_memberships`.
 WP-admin page (System Admin only) to create an account with an owner (existing or new user). AC: creating an account creates owner membership + settings + audit.

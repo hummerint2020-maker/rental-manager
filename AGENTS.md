@@ -27,7 +27,8 @@ Target hosting: shared hosting first, VPS later.
 ## Stack (fixed)
 
 - PHP **8.1+**, MySQL **8.0+** or MariaDB **10.6+**, **InnoDB** and `utf8mb4` only.
-- WordPress **6.4+**. Single site. **No Multisite.**
+- WordPress **7.0+** (production runs **7.1.x**; keep CI on the current 7.1 release). Single site. **No Multisite.**
+  Rental Manager is a SaaS on one install we control, so only current WordPress versions are supported.
 - Composer. Bundled vendor libraries are namespace-prefixed with **Strauss** into `RentalManager\Vendor\`,
   except **Action Scheduler**: ship it unchanged in `vendor/woocommerce/action-scheduler/` and load its
   `action-scheduler.php` before `plugins_loaded` completes so its shared version registry remains intact.
