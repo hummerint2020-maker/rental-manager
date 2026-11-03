@@ -14,19 +14,7 @@ if (!$wordpress || !is_file($wordpress . '/wp-settings.php') || is_file($wordpre
     exit(1);
 }
 
-define('ABSPATH', rtrim($wordpress, '/\\') . '/');
-define('WP_INSTALLING', true);
-define('DB_NAME', 'rental_manager_test');
-define('DB_USER', 'root');
-define('DB_PASSWORD', getenv('RM_TEST_DB_PASSWORD'));
-define('DB_HOST', '127.0.0.1');
-define('DB_CHARSET', 'utf8mb4');
-define('DB_COLLATE', '');
-define('WP_DEBUG', true);
-define('WP_DEBUG_DISPLAY', true);
-define('WP_HOME', 'http://localhost');
-define('WP_SITEURL', 'http://localhost');
-define('DISABLE_WP_CRON', true);
+require dirname(__DIR__) . '/tests/Support/wordpress-smoke-config.php';
 $table_prefix = 'wp_';
 $_SERVER['HTTP_HOST'] = 'localhost';
 $_SERVER['REQUEST_METHOD'] = 'GET';
@@ -54,7 +42,11 @@ if (class_exists('Mpdf\\Mpdf') || class_exists('PHPUnit\\Framework\\TestCase')) 
     throw new RuntimeException('The plugin loaded unprefixed vendor or development classes.');
 }
 
-load_textdomain('rental-manager', dirname(__DIR__) . '/languages/rental-manager-ar.mo');
+if (!function_exists('as_enqueue_async_action') || !class_exists('ActionScheduler')) {
+    throw new RuntimeException('The bundled, unprefixed Action Scheduler did not initialize.');
+}
+
+load_textdomain('rental-manager', WP_PLUGIN_DIR . '/rental-manager/languages/rental-manager-ar.mo');
 $message = 'Rental Manager requires PHP 8.1 or later and WordPress 6.4 or later.';
 if (translate($message, 'rental-manager') === $message) {
     throw new RuntimeException('Bundled Arabic translations did not load.');

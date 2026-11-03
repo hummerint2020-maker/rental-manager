@@ -28,7 +28,9 @@ Target hosting: shared hosting first, VPS later.
 
 - PHP **8.1+**, MySQL **8.0+** or MariaDB **10.6+**, **InnoDB** and `utf8mb4` only.
 - WordPress **6.4+**. Single site. **No Multisite.**
-- Composer. All bundled vendor libraries are namespace-prefixed with **Strauss** into `RentalManager\Vendor\`.
+- Composer. Bundled vendor libraries are namespace-prefixed with **Strauss** into `RentalManager\Vendor\`,
+  except **Action Scheduler**: ship it unchanged in `vendor/woocommerce/action-scheduler/` and load its
+  `action-scheduler.php` before `plugins_loaded` completes so its shared version registry remains intact.
 - Libraries: `woocommerce/action-scheduler` (background jobs), `mpdf/mpdf` (PDF, Arabic/RTL).
   Everything else (DI container, ULID, Money, Clock) is small in-house code in `src/Kernel`.
 - Tests: PHPUnit 10, `deptrac` (architecture rules), PHPStan level 6 with `szepeviktor/phpstan-wordpress`,

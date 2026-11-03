@@ -20,6 +20,12 @@ final class BootstrapTest extends TestCase
 
     protected function tearDown(): void
     {
+        $scheduler = $this->pluginDirectory . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
+        if (is_file($scheduler)) {
+            unlink($scheduler);
+            rmdir(dirname($scheduler));
+            rmdir(dirname($scheduler, 2));
+        }
         foreach (['vendor', 'vendor-prefixed'] as $directory) {
             $autoload = $this->pluginDirectory . '/' . $directory . '/autoload.php';
             if (is_file($autoload)) {
@@ -31,6 +37,7 @@ final class BootstrapTest extends TestCase
         rmdir($this->pluginDirectory);
     }
 
+    /** @return list<array{string}> */
     public static function unsupportedWordPressVersions(): array
     {
         return [['6.3.9'], ['5.9'], ['']];
@@ -55,7 +62,10 @@ final class BootstrapTest extends TestCase
     public function testMissingPrefixedDependenciesDoNotLoadComposer(): void
     {
         mkdir($this->pluginDirectory . '/vendor');
-        file_put_contents($this->pluginDirectory . '/vendor/autoload.php', '<?php throw new RuntimeException("Loaded");');
+        file_put_contents(
+            $this->pluginDirectory . '/vendor/autoload.php',
+            '<?php throw new RuntimeException("Loaded");'
+        );
         $result = $this->probe();
         self::assertFalse($result['booted']);
         self::assertStringContainsString('missing its dependencies', $result['notice']);
@@ -71,9 +81,13 @@ final class BootstrapTest extends TestCase
     public function testDirectAccessDoesNothing(): void
     {
         $this->installAutoloaders(true);
-        self::assertSame(['booted' => false, 'notice' => ''], $this->probe('6.4', 'admin', 'direct'));
+        $result = $this->probe('6.4', 'admin', 'direct');
+        self::assertFalse($result['booted']);
+        self::assertSame('', $result['notice']);
+        self::assertSame(0, $result['scheduler_loads']);
     }
 
+    /** @return list<array{string}> */
     public static function supportedWordPressVersions(): array
     {
         return [['6.4'], ['6.4.0'], ['6.8']];
@@ -83,7 +97,71 @@ final class BootstrapTest extends TestCase
     public function testSupportedWordPressBootsTheKernel(string $version): void
     {
         $this->installAutoloaders();
-        self::assertSame(['booted' => true, 'notice' => ''], $this->probe($version));
+        $this->installScheduler();
+        $result = $this->probe($version);
+        self::assertTrue($result['booted']);
+        self::assertSame('', $result['notice']);
+        self::assertSame(1, $result['scheduler_loads']);
+    }
+
+    public function testSchedulerLoadsOnlyOnceBeforePluginsLoaded(): void
+    {
+        $this->installAutoloaders();
+        $this->installScheduler();
+        $result = $this->probe('6.4', 'admin', 'repeat');
+        self::assertTrue($result['booted']);
+        self::assertSame(1, $result['scheduler_loads']);
+    }
+
+    public function testMissingSchedulerPreventsBoot(): void
+    {
+        $this->installAutoloaders();
+        $result = $this->probe();
+        self::assertFalse($result['booted']);
+        self::assertStringContainsString('missing its dependencies', $result['notice']);
+    }
+
+    #[DataProvider('unsupportedWordPressVersions')]
+    public function testActivationRejectsUnsupportedWordPress(string $version): void
+    {
+        $this->installAutoloaders(true);
+        $this->installScheduler();
+        $result = $this->probe($version, 'admin', 'activate');
+        self::assertFalse($result['booted']);
+        self::assertTrue($result['deactivated']);
+        self::assertSame(0, $result['scheduler_loads']);
+        self::assertSame(
+            'Rental Manager requires PHP 8.1 or later and WordPress 6.4 or later.',
+            $result['die_message']
+        );
+    }
+
+    public function testActivationRejectsMissingDependencies(): void
+    {
+        $result = $this->probe('6.4', 'admin', 'activate');
+        self::assertTrue($result['deactivated']);
+        self::assertStringContainsString('missing its dependencies', (string) $result['die_message']);
+    }
+
+    public function testActivationAcceptsSupportedInstallation(): void
+    {
+        $this->installAutoloaders();
+        $this->installScheduler();
+        $result = $this->probe('6.4', 'admin', 'activate');
+        self::assertTrue($result['booted']);
+        self::assertFalse($result['deactivated']);
+        self::assertNull($result['die_message']);
+    }
+
+    private function installScheduler(): void
+    {
+        $directory = $this->pluginDirectory . '/vendor/woocommerce/action-scheduler';
+        mkdir($directory, 0777, true);
+        file_put_contents(
+            $directory . '/action-scheduler.php',
+            '<?php if ($GLOBALS["plugins_loaded"]) { throw new RuntimeException("Scheduler loaded too late"); }'
+            . ' $GLOBALS["scheduler_loads"]++;'
+        );
     }
 
     private function installAutoloaders(bool $throw = false): void
@@ -93,16 +171,28 @@ final class BootstrapTest extends TestCase
             $source = $throw ? '<?php throw new RuntimeException("Autoloader must not run");' : '<?php';
             if (!$throw && $directory === 'vendor-prefixed') {
                 $source .= ' namespace RentalManager\\Kernel; final class Kernel {'
-                    . ' public static function boot(): void { $GLOBALS["booted"] = true; } }';
+                    . ' public static function boot(): void {'
+                    . ' if ($GLOBALS["scheduler_loads"] !== 1) { throw new \\RuntimeException("Scheduler missing"); }'
+                    . ' $GLOBALS["booted"] = true; } }';
             }
             file_put_contents($this->pluginDirectory . '/' . $directory . '/autoload.php', $source);
         }
     }
 
+    /**
+     * @return array{booted: bool, notice: string, scheduler_loads: int, deactivated: bool, die_message: ?string}
+     */
     private function probe(string $version = '6.4', string $role = 'admin', string $mode = 'wordpress'): array
     {
         $process = proc_open(
-            [PHP_BINARY, dirname(__DIR__) . '/Support/bootstrap-probe.php', $this->pluginDirectory, $version, $role, $mode],
+            [
+                PHP_BINARY,
+                dirname(__DIR__) . '/Support/bootstrap-probe.php',
+                $this->pluginDirectory,
+                $version,
+                $role,
+                $mode,
+            ],
             [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $pipes
         );

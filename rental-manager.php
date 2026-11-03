@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: Rental Manager
  * Description: Arabic-first rental management for property owners and renters.
@@ -22,6 +23,30 @@ $rmRequirementsMet = version_compare(PHP_VERSION, '8.1', '>=')
     && isset($GLOBALS['wp_version'])
     && version_compare($GLOBALS['wp_version'], '6.4', '>=');
 
+$rmDependenciesMet = is_readable(__DIR__ . '/vendor-prefixed/autoload.php')
+    && is_readable(__DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php');
+
+register_activation_hook(__FILE__, static function () use ($rmRequirementsMet, $rmDependenciesMet) {
+    if ($rmRequirementsMet && $rmDependenciesMet) {
+        return;
+    }
+
+    deactivate_plugins(plugin_basename(__FILE__));
+    load_plugin_textdomain('rental-manager', false, dirname(plugin_basename(__FILE__)) . '/languages');
+
+    if (!$rmRequirementsMet) {
+        wp_die(esc_html__(
+            'Rental Manager requires PHP 8.1 or later and WordPress 6.4 or later.',
+            'rental-manager'
+        ));
+    }
+
+    wp_die(esc_html__(
+        'Rental Manager is missing its dependencies. Install a complete release or run composer install.',
+        'rental-manager'
+    ));
+});
+
 if (!$rmRequirementsMet) {
     add_action('admin_notices', static function () {
         if (current_user_can('manage_options')) {
@@ -36,7 +61,7 @@ if (!$rmRequirementsMet) {
     return;
 }
 
-if (!is_readable(__DIR__ . '/vendor-prefixed/autoload.php')) {
+if (!$rmDependenciesMet) {
     add_action('admin_notices', static function () {
         if (current_user_can('manage_options')) {
             echo '<div class="notice notice-error"><p>';
@@ -50,6 +75,8 @@ if (!is_readable(__DIR__ . '/vendor-prefixed/autoload.php')) {
     return;
 }
 
+// Action Scheduler negotiates the newest active copy through its global registry.
+require_once __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
 require_once __DIR__ . '/vendor-prefixed/autoload.php';
 
 \RentalManager\Kernel\Kernel::boot();

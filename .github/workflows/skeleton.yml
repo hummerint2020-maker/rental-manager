@@ -2,7 +2,7 @@ name: T0.1 skeleton smoke checks
 
 on:
   push:
-    branches: ['codex/t0.1-repository-skeleton']
+    branches: [main, 'codex/t0.1-repository-skeleton']
   pull_request:
     paths:
       - '**.php'
@@ -40,11 +40,19 @@ jobs:
       - run: composer install --no-interaction --prefer-dist
       - run: composer validate --strict
       - run: composer check
+      - name: Assemble runtime release with the original Action Scheduler
+        run: |
+          runtime="$RUNNER_TEMP/release/rental-manager"
+          mkdir -p "$runtime/vendor/woocommerce"
+          cp rental-manager.php "$runtime/"
+          cp -R src languages vendor-prefixed "$runtime/"
+          cp -R vendor/woocommerce/action-scheduler "$runtime/vendor/woocommerce/"
+          test ! -e "$runtime/vendor-prefixed/woocommerce/action-scheduler"
       - name: Install clean WordPress 6.4 and activate the plugin
         env:
           RM_TEST_WP_DIR: ${{ runner.temp }}/wordpress
           RM_TEST_DB_PASSWORD: test-password
         run: |
           curl --fail --silent --show-error --location https://wordpress.org/wordpress-6.4.tar.gz | tar -xz -C "$RUNNER_TEMP"
-          ln -s "$GITHUB_WORKSPACE" "$RM_TEST_WP_DIR/wp-content/plugins/rental-manager"
+          ln -s "$RUNNER_TEMP/release/rental-manager" "$RM_TEST_WP_DIR/wp-content/plugins/rental-manager"
           php bin/smoke-wordpress.php
