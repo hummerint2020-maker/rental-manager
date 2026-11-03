@@ -67,7 +67,8 @@ jobs:
           runtime="$RUNNER_TEMP/release/rental-manager"
           mkdir -p "$runtime/vendor/woocommerce"
           cp rental-manager.php "$runtime/"
-          cp -R src languages vendor-prefixed "$runtime/"
+          cp -R src languages vendor-prefixed build "$runtime/"
+          test -f "$runtime/build/manifest.json"
           cp -R vendor/woocommerce/action-scheduler "$runtime/vendor/woocommerce/"
           test ! -e "$runtime/vendor-prefixed/woocommerce/action-scheduler"
       - name: Install clean WordPress 6.4 and activate the plugin
@@ -101,7 +102,10 @@ jobs:
       - name: Build frontend
         if: steps.scaffold.outputs.enabled == 'true'
         run: npm --prefix frontend run build
-      - name: Test frontend
+      - name: Install Chromium for frontend tests
+        if: steps.scaffold.outputs.enabled == 'true'
+        run: npm --prefix frontend exec -- playwright install --with-deps chromium
+      - name: Run frontend browser tests
         if: steps.scaffold.outputs.enabled == 'true'
         env:
           CI: 'true'
