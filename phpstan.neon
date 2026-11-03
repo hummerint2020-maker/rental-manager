@@ -5,6 +5,8 @@ parameters:
     level: 6
     scanFiles:
         - tests/Support/wordpress-tests.stub
+        - tests/Support/mpdf-prefixed.stub
+        - tests/Support/action-scheduler.stub
     paths:
         - src
         - rental-manager.php

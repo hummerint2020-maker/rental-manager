@@ -53,6 +53,8 @@ jobs:
           tools: composer:v2
       - run: composer install --no-interaction --prefer-dist
       - run: composer validate --strict
+      - name: Generate the synthetic Arabic RTL PDF spike
+        run: php bin/spike-pdf.php
       - run: composer check
       - name: Run T0.3 Integration and Api suites
         env:
