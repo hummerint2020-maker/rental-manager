@@ -6,7 +6,7 @@ Arabic-first (RTL) single-page app for owners and renters.
 
 ## Status
 
-T0.1 repository skeleton, T0.2 architecture checks and T0.3 test harness implemented. Business modules and the SPA
+T0.1 repository skeleton, T0.2 architecture checks, T0.3 test harness and T0.4 CI implemented. Business modules and the SPA
 are not implemented yet.
 
 ## Development
@@ -27,10 +27,11 @@ Composer's unprefixed autoloader or development libraries. Complete releases mus
 Use Linux (or WSL) for dependency prefixing. On native Windows, Strauss 0.31 has upstream path
 errors; `composer install --no-scripts` still permits PHP checks but does not produce a deployable plugin.
 
-The T0.1 GitHub smoke check builds on Linux, runs the PHP checks, assembles a runtime-only package
+The CI workflow builds on Linux, runs the PHP checks, assembles a runtime-only package
 with the original Action Scheduler, and activates that package on a disposable WordPress 6.4/MySQL 8
-installation. It also validates the T0.3 integration/API harness on its existing MySQL service.
-The full CI version matrix remains T0.4. See [`docs/TESTING.md`](docs/TESTING.md) for installation and suites, and
+installation. It validates the T0.3 integration/API harness across PHP 8.1/8.3 and MySQL 8.0/MariaDB 10.6.
+Frontend build/test are wired with an explicit placeholder gate until T0.5. See
+[`docs/CI.md`](docs/CI.md) for CI behavior, [`docs/TESTING.md`](docs/TESTING.md) for installation and suites, and
 [`docs/ARCHITECTURE_CHECKS.md`](docs/ARCHITECTURE_CHECKS.md) for the enforced boundaries and regression fixtures.
 
 `bin/smoke-wordpress.php` is for the fresh CI database only. Never run it on real hosting.

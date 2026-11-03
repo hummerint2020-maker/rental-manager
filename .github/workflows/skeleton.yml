@@ -1,46 +1,60 @@
-name: T0.1 skeleton smoke checks
+name: CI
 
 on:
   push:
-    branches: [main, 'codex/t0.1-repository-skeleton']
+    branches: [main]
   pull_request:
-    paths:
-      - '**.php'
-      - 'composer.*'
-      - '*.xml*'
-      - '*.neon'
-      - 'deptrac.yaml'
-      - 'languages/**'
-      - '.github/workflows/skeleton.yml'
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  skeleton:
+  backend:
+    name: PHP ${{ matrix.php }} / ${{ matrix.database.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.3']
+        database:
+          - name: MySQL 8.0
+            image: mysql:8.0
+            health: mysqladmin ping -h 127.0.0.1 -ptest-password
+          - name: MariaDB 10.6
+            image: mariadb:10.6
+            health: healthcheck.sh --connect --innodb_initialized
     services:
       mysql:
-        image: mysql:8.0
+        image: ${{ matrix.database.image }}
         env:
           MYSQL_ROOT_PASSWORD: test-password
           MYSQL_DATABASE: rental_manager_test
+          MARIADB_ROOT_PASSWORD: test-password
+          MARIADB_DATABASE: rental_manager_test
         ports: ['3306:3306']
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -ptest-password"
+          --health-cmd="${{ matrix.database.health }}"
           --health-interval=10s --health-timeout=5s --health-retries=10
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: ${{ matrix.php }}
           extensions: gd, mbstring, mysqli, sodium, zip
           coverage: none
           tools: composer:v2
       - run: composer install --no-interaction --prefer-dist
       - run: composer validate --strict
       - run: composer check
-      - name: Validate the T0.3 WordPress test harness on the existing MySQL service
+      - name: Run T0.3 Integration and Api suites
         env:
           RM_ALLOW_TEST_DB_RESET: '1'
           WP_CORE_DIR: ${{ runner.temp }}/rm-integration-core
@@ -64,3 +78,31 @@ jobs:
           curl --fail --silent --show-error --location https://wordpress.org/wordpress-6.4.tar.gz | tar -xz -C "$RUNNER_TEMP"
           ln -s "$RUNNER_TEMP/release/rental-manager" "$RM_TEST_WP_DIR/wp-content/plugins/rental-manager"
           php bin/smoke-wordpress.php
+
+  frontend:
+    name: Frontend build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test the frontend CI gate
+        run: node --test tests/CI/frontend-gate.test.mjs
+      - name: Check frontend scaffold prerequisites
+        id: scaffold
+        run: node bin/ci-frontend.mjs
+      - name: Install locked frontend dependencies
+        if: steps.scaffold.outputs.enabled == 'true'
+        run: npm --prefix frontend ci
+      - name: Build frontend
+        if: steps.scaffold.outputs.enabled == 'true'
+        run: npm --prefix frontend run build
+      - name: Test frontend
+        if: steps.scaffold.outputs.enabled == 'true'
+        env:
+          CI: 'true'
+        run: npm --prefix frontend test
