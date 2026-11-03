@@ -1,5 +1,8 @@
 # Prompts to paste into Codex
 
+> Normally you do not need these: the review loop (`.github/workflows/claude-review-loop.yml`, see AGENTS.md)
+> posts the task and fix requests to `@codex` automatically. Use them only if the loop is stopped.
+
 Use one Codex task per phase (or per 2–3 tasks for big phases like 1, 4, 5, 6).
 Review and merge before starting the next prompt.
 

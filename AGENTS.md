@@ -91,6 +91,17 @@ tests/
 docs/
 ```
 
+## Automated review loop
+
+Work arrives as `@codex` comments on the phase issues (one task per request) and review findings arrive as
+`@codex` comments on your pull request. The loop is driven by `.github/workflows/claude-review-loop.yml`.
+
+- One task per pull request. Branch `codex/t<phase>.<n>-<slug>`, PR against `main`, title starts with the task id
+  (`T1.3: ...`), body contains `Refs #<phase issue>`. A PR that breaks these conventions is not reviewed.
+- When a comment asks you to fix review findings or a CI failure, push the fix to the **same branch**; never open a new PR for it.
+- Never modify `.github/workflows/claude-review-loop.yml` or anything under `.github/claude/`.
+- Never merge, close, or mark your own PR ready; the loop does that after a clean review and green CI.
+
 ## Architecture rules (enforced by deptrac + tests)
 
 1. `Domain` imports nothing from WordPress, `$wpdb`, `WP_*`, REST, filesystem, mail, or `Infrastructure`.

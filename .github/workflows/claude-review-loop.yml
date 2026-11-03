@@ -1,0 +1,105 @@
+name: Claude review loop
+
+# Codex opens a PR for one task -> CI runs -> Claude reviews -> Codex fixes (max 3 rounds)
+# -> clean review + green CI -> merge -> request the next task from Codex.
+# pull_request_target runs this file and the loop scripts from main, so a PR cannot change its own review.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Task id to request from Codex (e.g. T1.1). Leave empty to only review a PR."
+        required: false
+      pr:
+        description: "PR number to review now (optional)"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: claude-review-loop-${{ github.event.pull_request.number || inputs.pr || inputs.task }}
+  cancel-in-progress: true
+
+env:
+  REPO: ${{ github.repository }}
+  OWNER_LOGIN: ${{ github.repository_owner }}
+  MAX_ROUNDS: "3"
+
+jobs:
+  start-task:
+    if: github.event_name == 'workflow_dispatch' && inputs.task != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Ask Codex for the task
+        env:
+          GH_TOKEN: ${{ secrets.RM_BOT_TOKEN }}
+        run: python3 .github/claude/loop.py start "${{ inputs.task }}"
+
+  review:
+    if: >-
+      (github.event_name == 'pull_request_target'
+        && github.event.pull_request.head.repo.full_name == github.repository
+        && startsWith(github.event.pull_request.head.ref, 'codex/'))
+      || (github.event_name == 'workflow_dispatch' && inputs.pr != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout trusted loop files (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: trusted
+
+      - name: Wait for CI and decide
+        id: pre
+        env:
+          GH_TOKEN: ${{ secrets.RM_BOT_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+          TRUSTED_DIR: trusted
+        run: python3 trusted/.github/claude/loop.py precheck
+
+      - name: Checkout PR head
+        if: steps.pre.outputs.action == 'review'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pre.outputs.sha }}
+          path: pr
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Claude review
+        if: steps.pre.outputs.action == 'review'
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.RM_BOT_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.RM_BOT_TOKEN }}
+          prompt: |
+            Read trusted/.github/claude/review-prompt.md and follow it exactly.
+            REPO=${{ github.repository }}
+            PR=${{ steps.pre.outputs.pr }}
+            SHA=${{ steps.pre.outputs.sha }}
+            ROUND=${{ steps.pre.outputs.round }}
+          claude_args: >-
+            --model opus
+            --max-turns 80
+            --allowedTools "Read,Glob,Grep,Write,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh api:*),Bash(git -C pr diff:*),Bash(git -C pr log:*),Bash(git -C pr show:*)"
+
+      - name: Act on verdict (fix request, or merge + next task)
+        if: steps.pre.outputs.action == 'review'
+        env:
+          GH_TOKEN: ${{ secrets.RM_BOT_TOKEN }}
+          PR_NUMBER: ${{ steps.pre.outputs.pr }}
+          SHA: ${{ steps.pre.outputs.sha }}
+          TRUSTED_DIR: trusted
+          VERDICT_FILE: pr/.rm-review/verdict.json
+        run: python3 trusted/.github/claude/loop.py act
