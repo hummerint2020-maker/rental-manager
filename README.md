@@ -6,7 +6,8 @@ Arabic-first (RTL) single-page app for owners and renters.
 
 ## Status
 
-T0.1 repository skeleton implemented. Business modules and the SPA are not implemented yet.
+T0.1 repository skeleton and T0.2 architecture checks implemented. Business modules and the SPA
+are not implemented yet.
 
 ## Development
 
@@ -28,8 +29,9 @@ errors; `composer install --no-scripts` still permits PHP checks but does not pr
 
 The T0.1 GitHub smoke check builds on Linux, runs the PHP checks, assembles a runtime-only package
 with the original Action Scheduler, and activates that package on a disposable WordPress 6.4/MySQL 8
-installation. The full architecture policies, WordPress PHPUnit
-harness, and CI version matrix remain T0.2–T0.4. Empty suites are intentional at this stage.
+installation. The WordPress PHPUnit harness and CI version matrix remain T0.3–T0.4.
+Empty business/integration suites are intentional at this stage. See
+[`docs/ARCHITECTURE_CHECKS.md`](docs/ARCHITECTURE_CHECKS.md) for the enforced boundaries and regression fixtures.
 
 `bin/smoke-wordpress.php` is for the fresh CI database only. Never run it on real hosting.
 Compile Arabic gettext changes with `msgfmt languages/rental-manager-ar.po -o languages/rental-manager-ar.mo`.

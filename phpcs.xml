@@ -5,6 +5,7 @@
     <file>rental-manager.php</file>
     <file>bin</file>
     <file>tests</file>
+    <file>tools</file>
     <arg name="extensions" value="php"/>
     <rule ref="PSR12"/>
 </ruleset>
