@@ -96,6 +96,8 @@ AC: both run (green with zero business routes).
 
 ## Phase 2 — Identity, access, shell
 
+**T2.0 CI coverage (from T0.4 review).** Add the current WordPress release to at least one CI matrix cell (keep 6.4 as the minimum); rename `.github/workflows/skeleton.yml` to `ci.yml`.
+
 **T2.1 Accounts minimal + memberships.** Migrations for `rm_accounts`, `rm_account_settings` (defaults: Africa/Cairo, EGP, ar, `RCPT-`), `rm_memberships`.
 WP-admin page (System Admin only) to create an account with an owner (existing or new user). AC: creating an account creates owner membership + settings + audit.
 
@@ -119,8 +121,6 @@ AC: tests asserting each restriction; `rm_client` capability list equals `['read
 SPA: auth guard, account switcher, layout with owner sidebar and renter bottom nav, i18n, RTL, nonce refresh on `rest_cookie_invalid_nonce`, global error toast with request_id.
 AC: E2E: owner logs in and sees empty dashboard in Arabic; renter sees renter home; client hitting /wp-admin is redirected.
 WF: RenterLogin, Main (shell only).
-
-**T2.0 CI coverage (from T0.4 review).** Add the current WordPress release to at least one CI matrix cell (keep 6.4 as the minimum); rename `.github/workflows/skeleton.yml` to `ci.yml`.
 
 **T2.7 Users management.** Endpoints + UI: list members, invite manager, change role (rules from DOMAIN §2), remove. WF: Settings (users card).
 
