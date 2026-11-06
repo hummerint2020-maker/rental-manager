@@ -17,14 +17,14 @@ permissions:
 
 jobs:
   package:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@2.40.0
         with:
           php-version: '8.1'
           extensions: gd, mbstring, sodium, zip
@@ -36,7 +36,7 @@ jobs:
         run: bash bin/package.sh "$RUNNER_TEMP/package"
       - name: Render the Arabic sample using only packaged fonts
         run: php bin/spike-pdf.php --package "$RUNNER_TEMP/package/rental-manager"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.2
         with:
           name: rental-manager-plugin
           path: ${{ runner.temp }}/package/rental-manager.zip

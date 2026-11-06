@@ -44,7 +44,7 @@ final class FixtureSchema
         ];
         foreach ($definitions as $name => $definition) {
             self::query($db, 'CREATE TABLE IF NOT EXISTS `' . self::table($db, $name) . '` (' . $definition
-                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci');
         }
     }
 

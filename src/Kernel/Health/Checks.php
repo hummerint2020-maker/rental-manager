@@ -48,7 +48,22 @@ final class Checks
                 && version_compare($match[1], '10.6', '>=');
         }
         return preg_match('/^(\d+\.\d+(?:\.\d+)?)/', $version, $match) === 1
-            && version_compare($match[1], '8.0', '>=');
+            && version_compare($match[1], '5.7.44', '>=');
+    }
+
+    /** @return list<Result> */
+    public static function databaseInformation(string $version): array
+    {
+        $results = [self::result(
+            'database',
+            self::databaseSupported($version),
+            'MySQL 5.7.44 or MariaDB 10.6 or later',
+            $version
+        )];
+        if (stripos($version, 'MariaDB') === false && preg_match('/^5\.7\./', $version)) {
+            $results[] = new Result('database_eol', 'warn', 'MySQL 5.7 is end-of-life upstream', $version);
+        }
+        return $results;
     }
 
     public static function result(string $id, bool $passed, string $message, string $detail = ''): Result

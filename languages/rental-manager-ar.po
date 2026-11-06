@@ -81,8 +81,14 @@ msgstr "تعطيل WP-Cron لاستخدام مجدول النظام"
 msgid "Database diagnostic could not complete"
 msgstr "تعذر إكمال فحص قاعدة البيانات"
 
-msgid "MySQL 8.0 or MariaDB 10.6 or later"
-msgstr "MySQL بإصدار 8.0 أو MariaDB بإصدار 10.6 أو أحدث"
+msgid "MySQL 5.7.44 or MariaDB 10.6 or later"
+msgstr "MySQL 5.7.44 أو MariaDB 10.6 أو أحدث"
+
+msgid "Warning"
+msgstr "تحذير"
+
+msgid "MySQL 5.7 is end-of-life upstream"
+msgstr "انتهى الدعم الرسمي لـ MySQL 5.7"
 
 msgid "Default storage engine is InnoDB"
 msgstr "محرك التخزين الافتراضي هو InnoDB"

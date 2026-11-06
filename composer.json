@@ -55,7 +55,7 @@
         "post-update-cmd": "@prefix-namespaces",
         "test:unit": "phpunit --testsuite Unit,Application,Architecture",
         "test:integration": "phpunit -c phpunit.integration.xml.dist --testsuite Integration,Api",
-        "test:arch": ["@php bin/check-architecture.php", "deptrac analyse --no-progress --fail-on-uncovered"],
+        "test:arch": ["@php bin/check-architecture.php", "@php bin/check-sql.php", "deptrac analyse --no-progress --fail-on-uncovered"],
         "stan": "phpstan analyse --no-progress --memory-limit=1G",
         "cs": "phpcs",
         "lint": "@php bin/lint.php",

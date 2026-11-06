@@ -7,3 +7,12 @@ msgstr ""
 
 msgid "Rental Manager is missing its dependencies. Install a complete release or run composer install."
 msgstr ""
+
+msgid "MySQL 5.7.44 or MariaDB 10.6 or later"
+msgstr ""
+
+msgid "MySQL 5.7 is end-of-life upstream"
+msgstr ""
+
+msgid "Warning"
+msgstr ""

@@ -66,6 +66,7 @@ final class AdminPage
         $statuses = [
             'pass' => __('Pass', 'rental-manager'),
             'fail' => __('Fail', 'rental-manager'),
+            'warn' => __('Warning', 'rental-manager'),
             'pending' => __('Pending', 'rental-manager'),
             'info' => __('Information', 'rental-manager'),
         ];

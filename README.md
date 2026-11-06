@@ -35,7 +35,12 @@ It produces `rental-manager.zip` plus its staged `rental-manager/` directory, bu
 Sans Arabic Regular/Bold with the OFL license, and checks both ZIP and extracted size are under
 8,000,000 bytes. All mPDF bundled fonts (including DejaVu) and unused script data are excluded
 from the staged copy. Installed Composer files are unchanged. The packaged PDF is tested too.
-`.github/workflows/ci.yml` validates PHP 8.1/8.4/8.5 against MySQL 8.0 and MariaDB 10.6 (six cells).
+`.github/workflows/ci.yml` validates PHP 8.1/8.3/8.5 against MySQL 8.0 and MariaDB 10.6, plus
+the production PHP 8.3 × MySQL 5.7.44 cell (seven cells). MySQL 5.7.44+ is supported; System Health
+shows its upstream end-of-life status as a warning. MariaDB still requires 10.6+.
+Project-created tables use `utf8mb4_unicode_520_ci`. `composer test:arch` rejects the SQL features
+forbidden on MySQL 5.7; the real database matrix remains necessary for dynamic queries and behavior.
+CI and packaging use Ubuntu 24.04 with Node 24 actions, pinned to verified release versions.
 The WordPress release is pinned once in that workflow's `WP_VERSION`. WordPress 6.x activation is refused
 with the bundled localized requirement message. System Health checks the WordPress 7.0 minimum too.
 Frontend CI now installs locked dependencies, builds assets and runs Chromium tests. See

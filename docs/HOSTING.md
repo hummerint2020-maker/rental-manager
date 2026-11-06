@@ -1,8 +1,10 @@
 # T0.6 hosting spike and checklist
 
 This task adds diagnostics, not production storage, financial receipts or cron configuration.
-T0.7 requires WordPress 7.0+ and pins integration/activation CI to 7.1.4. Production targets PHP 8.4;
-the six backend cells cover PHP 8.1/8.4/8.5 against MySQL 8.0/MariaDB 10.6.
+WordPress 7.0+ is required and integration/activation CI is pinned to 7.1.4. Production runs
+PHP 8.3 and MySQL 5.7.44 (Percona build on Bluehost). The seven backend cells cover PHP
+8.1/8.3/8.5 against MySQL 8.0/MariaDB 10.6, plus PHP 8.3 × the pinned mysql:5.7.44 image.
+Every cell runs all PHP suites, integration/API tests, slim packaging and activation/PDF smoke.
 
 ## System Health
 
@@ -15,9 +17,24 @@ software reported by PHP and the WordPress version, including on passive GET. Th
 informational (a proxy may hide the actual server); WordPress passes only at version 7.0 or later.
 
 The twelve results check PHP >= 8.1, sodium, mbstring, GD **or** Imagick, PHP memory >= 256 MB
-(unlimited `-1` also passes), `DISABLE_WP_CRON === true`, MySQL >= 8.0 / MariaDB >= 10.6,
+(unlimited `-1` also passes), `DISABLE_WP_CRON === true`, MySQL >= 5.7.44 / MariaDB >= 10.6,
 default InnoDB, real foreign-key rejection, actual rollback, private-file HTTP protection and
 an executed Action Scheduler canary. MariaDB's `5.5.5-` compatibility prefix is handled.
+
+MySQL 5.7 has an additional **Warning**, not a failed compatibility check: upstream maintenance
+has ended. The version check still fails below 5.7.44. Percona suffixes such as `5.7.44-48-log`
+are accepted; the EOL row is absent on MySQL 8 and supported MariaDB. This does not claim that
+an Oracle MySQL CI image verifies every Percona/Bluehost configuration detail.
+
+All project-created tables (including disposable health and harness tables) explicitly use
+InnoDB/utf8mb4 with **utf8mb4_unicode_520_ci**; the test database/configuration selects the same
+collation. The Phase 1 migration DDL helper
+must use that same default when it is implemented; no migration runner is introduced by T0.9.
+Do not use `utf8mb4_0900_*` or the other SQL features forbidden in AGENTS.md. The static SQL gate
+runs with `composer test:arch`; JSON columns, generated columns, ascending indexes and normal
+`ORDER BY ... DESC` remain supported. Real-host diagnostics remain a human step below.
+
+Upstream context: [MySQL 5.7.44 release notes](https://dev.mysql.com/doc/relnotes/mysql/5.7/en/news-5-7-44.html).
 Controls/results have English/Arabic translations; SQL errors, credentials and absolute paths
 are not displayed.
 
