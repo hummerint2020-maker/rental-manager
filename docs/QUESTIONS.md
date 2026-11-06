@@ -17,6 +17,16 @@ Agents add open questions here. Ahmed answers inline and moves resolved items to
 
 ## Resolved
 
+T0.8 verification (no new decision): IBM Plex Sans Arabic Regular and Bold from the pinned
+Google Fonts distribution (see assets/fonts/README.md) render joined Arabic correctly with
+useOTL=0xFF and useKashida=0. The synthetic receipt was rendered and visually inspected for
+joined Arabic in normal/bold text, mixed Latin references and Arabic-Indic amounts; contextual
+initial/medial/final forms are also tested with the real mPDF OTL engine. Keep Plex as specified;
+Noto Naskh Arabic fallback is unnecessary. Automatic language font switching is disabled so
+Arabic and Latin share Plex and cannot request stripped CJK or other fallback fonts. The package
+limit uses decimal MB (strictly less than 8,000,000 bytes), checked zipped and extracted.
+No new dependency or business-rule question; real-host visual confirmation remains [AHMED].
+
 T0.7 verification (no new decision): the pinned WordPress 7.1.4 test bootstrap and abstract test
 case still call parseTestMethodAnnotations, which is unavailable in our PHPUnit 10 path. Retain
 the existing T0.3 bridge/default, with the upstream evidence and reproduction in TESTING.md.

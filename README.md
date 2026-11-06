@@ -30,6 +30,11 @@ errors; `composer install --no-scripts` still permits PHP checks but does not pr
 
 The CI workflow builds on Linux, runs the PHP checks, assembles a runtime-only package
 with the original Action Scheduler, and activates that package on disposable WordPress 7.1.4 installations.
+Both CI and the downloadable package workflow use `bash bin/package.sh <new-output-directory>`.
+It produces `rental-manager.zip` plus its staged `rental-manager/` directory, bundles only IBM Plex
+Sans Arabic Regular/Bold with the OFL license, and checks both ZIP and extracted size are under
+8,000,000 bytes. All mPDF bundled fonts (including DejaVu) and unused script data are excluded
+from the staged copy. Installed Composer files are unchanged. The packaged PDF is tested too.
 `.github/workflows/ci.yml` validates PHP 8.1/8.4/8.5 against MySQL 8.0 and MariaDB 10.6 (six cells).
 The WordPress release is pinned once in that workflow's `WP_VERSION`. WordPress 6.x activation is refused
 with the bundled localized requirement message. System Health checks the WordPress 7.0 minimum too.

@@ -49,7 +49,7 @@ final class HealthChecksTest extends TestCase
         self::assertStringContainsString('lang="ar" dir="rtl"', $arabic);
         self::assertStringContainsString('إيصال تجريبي', $arabic);
         self::assertStringContainsString('هذا الإيصال ليس فاتورة ضريبية.', $arabic);
-        self::assertStringContainsString('dejavusans', $arabic);
+        self::assertStringContainsString('plexsansarabic', $arabic);
         self::assertStringNotContainsString('http', $arabic);
         self::assertStringContainsString('This receipt is not a tax invoice.', PdfSample::html('en'));
         self::assertStringContainsString('dir="ltr"', PdfSample::html('en'));

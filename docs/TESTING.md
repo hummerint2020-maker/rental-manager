@@ -104,3 +104,27 @@ the previous error handler is restored, and both PHPUnit configurations retain f
 Upstream evidence: [7.1.4 bootstrap](https://github.com/WordPress/wordpress-develop/blob/7.1.4/tests/phpunit/includes/bootstrap.php),
 [compatibility layer](https://github.com/WordPress/wordpress-develop/blob/7.1.4/tests/phpunit/includes/phpunit6/compat.php),
 [abstract test case](https://github.com/WordPress/wordpress-develop/blob/7.1.4/tests/phpunit/includes/abstract-testcase.php).
+
+## T0.8 slim package and Arabic shaping
+
+`PdfFontsTest` exercises the real mPDF OpenType engine for Regular and Bold: repeated Arabic
+beh must become three distinct contextual glyphs (initial, medial, final). This catches missing
+GSUB shaping even when a PDF can still be generated. The shared PdfFonts config supplies only
+Plex, disables CJK/automatic fallback and keeps kashida off. The synthetic receipt also has a
+visual check for joined letters, mixed-direction references and Arabic-Indic digits.
+
+`PackageCheckTest` checks independent ZIP/extracted 8 MB limits, rejected DejaVu/CJK/core-font
+data, and missing required font/Scheduler files. On Linux, run:
+
+```sh
+composer install
+bash bin/package.sh /tmp/rm-release-new
+php bin/spike-pdf.php --package /tmp/rm-release-new/rental-manager
+```
+
+Use a new output directory; packaging deliberately refuses to overwrite existing output.
+The script includes only the runtime, local fonts/licenses, translations and committed SPA
+build, strips unused mPDF resources, writes BUILD.txt and verifies its ZIP and staged directory.
+CI runs this in all six backend cells before the clean-install smoke, which renders through
+the real authorized System Health download. Native Windows can run the PHP checks and native
+mPDF spike, but Linux CI remains required for Strauss and assembled-release checks.

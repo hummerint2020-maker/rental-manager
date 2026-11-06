@@ -1,4 +1,4 @@
-# Continuous integration (T0.7)
+# Continuous integration (T0.8)
 
 `.github/workflows/ci.yml` runs the workflow named **CI** on every pull request targeting main
 and every push to main. There are no path filters that could miss shell scripts or frontend changes.
@@ -30,7 +30,14 @@ version matches it. PHP 8.1 is the minimum, 8.4 the production target, and 8.5 t
 The runtime release assembly and clean WordPress activation smoke steps are retained in every
 combination. The runtime package includes the original Action Scheduler, isolated libraries and
 the committed frontend build; assembly requires its manifest.
-The smoke check verifies activation, dependency isolation, Action Scheduler and Arabic gettext.
+Both this workflow and `package.yml` invoke `bash bin/package.sh <new-output-directory>`.
+The shared script makes an installable `rental-manager.zip` and enforces **< 8,000,000 bytes**
+for both ZIP and extracted file contents. It rejects additional fonts, missing Plex weights or
+license, mPDF bundled font/CJK resources, and a missing/or prefixed Action Scheduler.
+The source vendor directories are never pruned. Only the staged package loses unused resources.
+Every backend cell renders the CLI PDF using the slim package's isolated loader and font files.
+The smoke check verifies activation, dependency isolation, Action Scheduler, Arabic gettext and
+the real authenticated System Health PDF download from the assembled release.
 Bootstrap tests additionally reject 6.x and pre-7.0 releases; the integration suite exercises
 the activation hook's Arabic refusal using real WordPress translation and plugin APIs.
 The PHPUnit 10 bridge remains necessary for the pinned upstream test library; see TESTING.md.

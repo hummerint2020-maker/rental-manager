@@ -40,14 +40,7 @@ final class PdfRenderer
             throw new ErrorException($message, 0, $severity, $file, $line);
         });
         try {
-            $config = [
-                'mode' => 'utf-8',
-                'format' => 'A4',
-                'default_font' => 'dejavusans',
-                'tempDir' => $directory,
-                'autoScriptToLang' => true,
-                'autoLangToFont' => true,
-            ];
+            $config = PdfFonts::config($directory);
             $pdf = $this->createPdf === null ? new Mpdf($config) : ($this->createPdf)($config);
             $pdf->SetDirectionality('rtl');
             $pdf->WriteHTML(PdfSample::html());
