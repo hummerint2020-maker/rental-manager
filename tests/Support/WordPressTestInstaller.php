@@ -52,12 +52,13 @@ final class WordPressTestInstaller
             throw new RuntimeException('Invalid database host.');
         }
         $connection = new mysqli($parts['host'], $user, $password, '', $parts['port'] ?? 3306);
-        $connection->query('CREATE DATABASE IF NOT EXISTS `' . $database . '` CHARACTER SET utf8mb4');
+        $connection->query('CREATE DATABASE IF NOT EXISTS `' . $database
+            . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci');
         $connection->close();
         $values = [
             'ABSPATH' => rtrim(str_replace('\\', '/', $core), '/') . '/', 'DB_NAME' => $database,
             'DB_USER' => $user, 'DB_PASSWORD' => $password, 'DB_HOST' => $host,
-            'DB_CHARSET' => 'utf8mb4', 'DB_COLLATE' => '', 'WP_TESTS_DOMAIN' => 'example.test',
+            'DB_CHARSET' => 'utf8mb4', 'DB_COLLATE' => 'utf8mb4_unicode_520_ci', 'WP_TESTS_DOMAIN' => 'example.test',
             'WP_TESTS_EMAIL' => 'admin@example.test', 'WP_TESTS_TITLE' => 'Rental Manager tests',
             'WP_PHP_BINARY' => PHP_BINARY, 'WP_DEBUG' => true,
         ];

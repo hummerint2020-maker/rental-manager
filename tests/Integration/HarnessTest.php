@@ -11,6 +11,24 @@ use RentalManager\Tests\Support\World;
 
 final class HarnessTest extends DatabaseTestCase
 {
+    public function testFixtureTablesUseThePortableCollationAndThePinnedProductionDatabase(): void
+    {
+        $version = (string) $this->db->get_var('SELECT VERSION()');
+        $expected = getenv('RM_EXPECT_DB_VERSION');
+        if ($expected !== false && $expected !== '') {
+            self::assertSame($expected, explode('-', $version)[0]);
+        }
+        foreach (['accounts', 'settings', 'renters', 'memberships', 'probe'] as $name) {
+            $table = FixtureSchema::table($this->db, $name);
+            $collation = $this->db->get_var($this->db->prepare(
+                'SELECT TABLE_COLLATION FROM information_schema.TABLES '
+                    . 'WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s',
+                $table
+            ));
+            self::assertSame('utf8mb4_unicode_520_ci', $collation, $name);
+        }
+    }
+
     public function testWorldHasTwoIndependentAccountsAndAllRoles(): void
     {
         self::assertTrue(class_exists(Kernel::class));

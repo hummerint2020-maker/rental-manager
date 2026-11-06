@@ -13,7 +13,7 @@ dependencies fail explicitly instead of silently skipping tests or breaking the 
 
 ## WordPress integration and API tests
 
-Use PHP 8.1+, Composer dependencies, mysqli, ZipArchive, HTTPS stream support and MySQL 8.0+
+Use PHP 8.1+, Composer dependencies, mysqli, ZipArchive, HTTPS stream support and MySQL 5.7.44+
 (or MariaDB 10.6+). Build the isolated dependencies on Linux/WSL before running the plugin tests.
 Use a disposable database: the official WordPress installer resets the WordPress test tables.
 
@@ -77,8 +77,8 @@ connection/cleanup lifecycle. The smoke test inserts a WordPress user and a fixt
 back, clears caches, and verifies neither remains. Another test verifies cross-account FK rejection.
 The API suite dispatches a real WordPress REST request as an account's fixture user.
 
-The CI workflow validates this harness on WordPress 7.1.4 with PHP 8.1/8.4/8.5 and
-MySQL 8.0/MariaDB 10.6. `WP_VERSION` is defined once in `.github/workflows/ci.yml`.
+The CI workflow validates this harness on WordPress 7.1.4 with PHP 8.1/8.3/8.5 and
+MySQL 8.0/MariaDB 10.6, plus PHP 8.3 × MySQL 5.7.44. `WP_VERSION` is defined once in `.github/workflows/ci.yml`.
 See [CI.md](CI.md) for the matrix and retained release smoke checks. The T0.5 frontend gate
 enables build and seven Playwright tests of the production bundle/direction guard. Run the build, install
 Chromium and then `npm --prefix frontend test`; see [FRONTEND.md](FRONTEND.md) for commands.
@@ -125,6 +125,6 @@ php bin/spike-pdf.php --package /tmp/rm-release-new/rental-manager
 Use a new output directory; packaging deliberately refuses to overwrite existing output.
 The script includes only the runtime, local fonts/licenses, translations and committed SPA
 build, strips unused mPDF resources, writes BUILD.txt and verifies its ZIP and staged directory.
-CI runs this in all six backend cells before the clean-install smoke, which renders through
+CI runs this in all seven backend cells before the clean-install smoke, which renders through
 the real authorized System Health download. Native Windows can run the PHP checks and native
 mPDF spike, but Linux CI remains required for Strauss and assembled-release checks.

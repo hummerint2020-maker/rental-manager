@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace RentalManager\Tests\Integration;
 
 use RentalManager\Kernel\Health\AdminPage;
+use RentalManager\Kernel\Health\Checks;
 use RentalManager\Kernel\Health\DatabaseProbe;
 use RentalManager\Kernel\Health\SchedulerProbe;
 use RentalManager\Tests\Support\DatabaseTestCase;
@@ -22,6 +23,15 @@ final class HealthHostingTest extends DatabaseTestCase
         self::assertSame('سلامة النظام', $catalog->translate('System Health'));
         self::assertSame('مدير الإيجارات', $catalog->translate('Rental Manager'));
         self::assertSame('ناجح', $catalog->translate('Pass'));
+        self::assertSame('تحذير', $catalog->translate('Warning'));
+        self::assertSame(
+            'MySQL 5.7.44 أو MariaDB 10.6 أو أحدث',
+            $catalog->translate('MySQL 5.7.44 or MariaDB 10.6 or later')
+        );
+        self::assertSame(
+            'انتهى الدعم الرسمي لـ MySQL 5.7',
+            $catalog->translate('MySQL 5.7 is end-of-life upstream')
+        );
         $guard = 'Rental Manager requires PHP 8.1 or later and WordPress 7.0 or later.';
         self::assertNotSame($guard, $catalog->translate($guard));
     }
@@ -35,9 +45,14 @@ final class HealthHostingTest extends DatabaseTestCase
         $sql = $other->prepare('SHOW TABLES LIKE %s', $pattern);
         $before = $other->get_col($sql);
         try {
-            foreach ((new DatabaseProbe($other))->run() as $result) {
+            $version = (string) $other->get_var('SELECT VERSION()');
+            $results = (new DatabaseProbe($other))->run();
+            $versionResults = Checks::databaseInformation($version);
+            self::assertEquals($versionResults, array_slice($results, 0, count($versionResults)));
+            foreach (array_slice($results, count($versionResults)) as $result) {
                 self::assertSame('pass', $result->status, $result->id);
             }
+            self::assertSame('pass', $results[0]->status, 'The CI database must meet the minimum.');
             self::assertSame($before, $other->get_col($sql));
             // The harness's outer transaction must survive the probe's DDL/rollback.
             $accounts = FixtureSchema::table($this->db, 'accounts');
@@ -63,9 +78,9 @@ final class HealthHostingTest extends DatabaseTestCase
                 && str_contains($query, 'FOREIGN KEY') ? 'INVALID HEALTH PROBE SQL' : $query;
         });
         try {
-            $results = (new DatabaseProbe($other))->run();
-            self::assertSame('fail', $results[2]->status);
-            self::assertSame('fail', $results[3]->status);
+            $results = array_column((new DatabaseProbe($other))->run(), 'status', 'id');
+            self::assertSame('fail', $results['foreign_keys']);
+            self::assertSame('fail', $results['rollback']);
             self::assertSame($before, $other->get_col($sql));
         } finally {
             $other->close();
@@ -101,6 +116,33 @@ final class HealthHostingTest extends DatabaseTestCase
         } catch (RuntimeException $error) {
             self::assertFalse(get_transient('rm_health_runner_' . get_current_user_id()));
         } finally {
+            unset($_REQUEST['_wpnonce']);
+            $_SERVER['REQUEST_METHOD'] = 'GET';
+        }
+    }
+
+    public function testMySql57EndOfLifeRendersAsWarningOnTheAdminPage(): void
+    {
+        wp_set_current_user(self::factoryUser('administrator'));
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_REQUEST['_wpnonce'] = wp_create_nonce('rm_health_checks');
+        add_filter('query', static fn (string $sql): string => $sql === 'SELECT VERSION()'
+            ? "SELECT '5.7.44-48-log'" : $sql);
+        add_filter('pre_http_request', static fn () => new \WP_Error('no_loopback', 'Test transport disabled.'));
+        ob_start();
+        try {
+            (new AdminPage())->render();
+            $html = (string) ob_get_contents();
+            self::assertStringContainsString(
+                '<td>MySQL 5.7 is end-of-life upstream</td><td>Warning</td>',
+                $html
+            );
+            self::assertStringContainsString(
+                '<td>MySQL 5.7.44 or MariaDB 10.6 or later</td><td>Pass</td>',
+                $html
+            );
+        } finally {
+            ob_end_clean();
             unset($_REQUEST['_wpnonce']);
             $_SERVER['REQUEST_METHOD'] = 'GET';
         }

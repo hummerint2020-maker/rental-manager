@@ -35,12 +35,34 @@ final class HealthChecksTest extends TestCase
 
     public function testDatabaseVersionsIncludingMariaDbCompatibilityPrefix(): void
     {
-        foreach (['8.0.0', '8.4.5-ubuntu', '10.6.0-MariaDB', '5.5.5-10.11.9-MariaDB'] as $value) {
+        foreach (
+            [
+                '5.7.44', '5.7.44-48-log', '8.0.0', '8.4.5-ubuntu', '10.6.0-MariaDB',
+                '5.5.5-10.11.9-MariaDB',
+            ] as $value
+        ) {
             self::assertTrue(Checks::databaseSupported($value), $value);
         }
-        foreach (['5.7.44', '10.5.9-MariaDB', '5.5.5-10.5.9-MariaDB', 'MariaDB', 'unknown'] as $value) {
+        foreach (
+            ['5.7.43', '5.7', '5.6.51', '10.5.9-MariaDB', '5.5.5-10.5.9-MariaDB', 'MariaDB', 'unknown'] as $value
+        ) {
             self::assertFalse(Checks::databaseSupported($value), $value);
         }
+    }
+
+    public function testOnlyMySql57HasAnEndOfLifeWarningWithoutFailingSupportedVersions(): void
+    {
+        foreach (['5.7.44', '5.7.44-48-log', '5.7.45'] as $version) {
+            $rows = Checks::databaseInformation($version);
+            self::assertSame(['database', 'database_eol'], array_column($rows, 'id'));
+            self::assertSame(['pass', 'warn'], array_column($rows, 'status'));
+            self::assertSame('MySQL 5.7 is end-of-life upstream', $rows[1]->message);
+        }
+        self::assertSame(['fail', 'warn'], array_column(Checks::databaseInformation('5.7.43'), 'status'));
+        foreach (['8.0.44', '8.4.5', '10.6.0-MariaDB', '5.5.5-10.11.9-MariaDB'] as $version) {
+            self::assertSame(['pass'], array_column(Checks::databaseInformation($version), 'status'));
+        }
+        self::assertSame(['fail'], array_column(Checks::databaseInformation('unknown'), 'status'));
     }
 
     public function testArabicPdfUsesLocalFontsSyntheticDataAndBothDisclaimers(): void

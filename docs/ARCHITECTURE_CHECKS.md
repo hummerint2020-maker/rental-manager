@@ -64,3 +64,30 @@ Fixtures live in isolated temporary directories under ignored tests/artifacts an
 Acceptance check: put a class using `global $wpdb` in src/Modules/Units/Domain and run
 `composer test:arch`: it must fail. Remove the sample and rerun the command: it must pass.
 T0.2 does not introduce the WordPress PHPUnit/database harness from T0.3.
+
+## MySQL 5.7 compatibility (T0.9)
+
+`composer test:arch` also runs `bin/check-sql.php`. It scans PHP and .sql files in src/, migrations/,
+bin/, tests/Support/, tests/Integration/ and tests/Api/. Architecture-test negative fixtures and
+vendor/tool implementations are outside that source scan. Explicit directory arguments support
+isolated CLI regression fixtures. PHP is parsed with the existing php-parser dependency; source
+is never executed. Literal concatenations, interpolation and heredoc/nowdoc text are inspected,
+including separately declared schema fragments. SQL string values and ordinary comments are
+ignored; executable version comments are inspected. Backtick identifiers do not become keywords.
+
+The gate rejects CTEs, window functions, SKIP LOCKED, NOWAIT, CHECK constraints, descending index
+key parts, JSON_TABLE, INSERT row aliases, invisible indexes and utf8mb4_0900_* collations. Normal
+ORDER BY DESC, ascending indexes, INSERT SELECT aliases, JSON/generated columns and the portable
+utf8mb4_unicode_520_ci collation are permitted. Multiple SQL statements are checked independently.
+The INSERT row-alias distinction follows the [MySQL INSERT documentation](https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html).
+
+`SqlCompatibilityInspectorTest` has bad PHP SQL fixtures for every banned feature, valid SQL
+fixtures, interpolation/concatenation cases, and a real CLI check that fails for CTE/window SQL
+and passes after replacement. Diagnostics include source path/line and the feature name.
+
+This is a conservative syntax guard, not a full SQL parser, data-flow analyzer or query validator.
+It cannot resolve SQL assembled from runtime-only values or fragments split across variables or
+methods. Do not put SQL structure in dynamic input to evade it. The seven real DB/PHP CI cells
+and code review remain required for semantics, account scoping, locks, FKs and transactions.
+Phase 1's migration DDL helper must use ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_520_ci; T0.9 only changes existing disposable/test DDL.

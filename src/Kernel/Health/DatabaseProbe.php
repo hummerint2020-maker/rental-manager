@@ -32,10 +32,12 @@ final class DatabaseProbe
             }
             $parent = substr($db->prefix, 0, 20) . 'rm_health_' . bin2hex(random_bytes(8));
             $child = $parent . '_fk';
-            $this->query("CREATE TABLE `$parent` (id INT PRIMARY KEY) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            $this->query("CREATE TABLE `$parent` (id INT PRIMARY KEY) ENGINE=InnoDB "
+                . 'DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci');
             $tables[] = $parent;
             $this->query("CREATE TABLE `$child` (id INT PRIMARY KEY, parent_id INT NOT NULL, "
-                . "FOREIGN KEY (parent_id) REFERENCES `$parent` (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                . "FOREIGN KEY (parent_id) REFERENCES `$parent` (id)) ENGINE=InnoDB "
+                . 'DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci');
             $tables[] = $child;
             $rejected = $db->query("INSERT INTO `$child` (id, parent_id) VALUES (1, 999)") === false;
             $warnings = $db->get_results('SHOW WARNINGS', ARRAY_A);
@@ -56,13 +58,7 @@ final class DatabaseProbe
             }
             $db->suppress_errors($previous);
         }
-        return [
-            Checks::result(
-                'database',
-                Checks::databaseSupported($version),
-                'MySQL 8.0 or MariaDB 10.6 or later',
-                $version
-            ),
+        return array_merge(Checks::databaseInformation($version), [
             Checks::result('engine', strcasecmp($engine, 'InnoDB') === 0, 'Default storage engine is InnoDB', $engine),
             Checks::result(
                 'foreign_keys',
@@ -70,7 +66,7 @@ final class DatabaseProbe
                 'Foreign keys reject invalid references and probe tables are removed'
             ),
             Checks::result('rollback', $rollback && $clean, 'Transaction rollback removes the probe row'),
-        ];
+        ]);
     }
 
     private function query(string $sql): void
