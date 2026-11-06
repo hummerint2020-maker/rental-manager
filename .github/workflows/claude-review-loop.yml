@@ -34,7 +34,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.task != ''
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
       - name: Ask Codex for the task
@@ -52,7 +52,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout trusted loop files (main)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
           path: trusted
@@ -67,7 +67,7 @@ jobs:
 
       - name: Checkout PR head
         if: steps.pre.outputs.action == 'review'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ steps.pre.outputs.sha }}
           path: pr
