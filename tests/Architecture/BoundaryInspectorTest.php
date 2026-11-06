@@ -23,6 +23,15 @@ final class BoundaryInspectorTest extends TestCase
     public static function violations(): iterable
     {
         yield 'bare wpdb' => ['Units/Domain', 'global $wpdb; $wpdb->get_results("SELECT 1");', '$wpdb'];
+        yield 'domain container' => [
+            'Units/Domain', 'new \\RentalManager\\Kernel\\Container\\Container();', 'Service locator',
+        ];
+        yield 'application container type' => [
+            'Units/Application', '$type = \\RentalManager\\Kernel\\Container\\Container::class;', 'Service locator',
+        ];
+        yield 'string container lookup' => [
+            'Units/Application', '$type = "RentalManager\\\\Kernel\\\\Container\\\\Container";', 'Service locator',
+        ];
         yield 'GLOBALS wpdb' => ['Units/Application', '$GLOBALS["wpdb"]->query("SELECT 1");', '$wpdb'];
         yield 'property wpdb' => ['Units/Presentation', '$this->wpdb->query("SELECT 1");', '$wpdb'];
         yield 'WordPress function' => ['Units/Domain', 'get_option("rm_test");', 'WordPress'];

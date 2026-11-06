@@ -1,0 +1,9 @@
+<?php
+
+declare(strict_types=1);
+
+namespace RentalManager\Tests\Support\ContainerFixtures;
+
+final class Dependency implements Contract
+{
+}

@@ -32,6 +32,8 @@ deptrac:
             - type: interface
               value: '^RentalManager\\Kernel\\'
           must_not:
+            - type: classLike
+              value: '^RentalManager\\Kernel\\Container\\'
             - type: layer
               value: KernelShared
             - type: layer
@@ -45,7 +47,7 @@ deptrac:
         - type: bool
           must:
             - type: classLike
-              value: '^RentalManager\\Kernel\\(Db|Migrations|Outbox|Jobs|Sequences|Storage|Audit|Health|Http|Security|I18n)\\'
+              value: '^RentalManager\\Kernel\\(Container|Db|Migrations|Outbox|Jobs|Sequences|Storage|Audit|Health|Http|Security|I18n)\\'
           must_not:
             - type: layer
               value: 'KernelContracts'
