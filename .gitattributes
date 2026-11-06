@@ -1,2 +1,4 @@
 * text=auto eol=lf
 /build/** linguist-generated=true
+/assets/fonts/*.ttf binary
+/assets/fonts/OFL.txt -text whitespace=cr-at-eol

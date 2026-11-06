@@ -68,14 +68,9 @@ jobs:
           bash bin/install-wp-tests.sh rm_test_rental_manager root test-password 127.0.0.1:3306 "$WP_VERSION"
           composer test:integration
       - name: Assemble runtime release with the original Action Scheduler
-        run: |
-          runtime="$RUNNER_TEMP/release/rental-manager"
-          mkdir -p "$runtime/vendor/woocommerce"
-          cp rental-manager.php "$runtime/"
-          cp -R src languages vendor-prefixed build "$runtime/"
-          test -f "$runtime/build/manifest.json"
-          cp -R vendor/woocommerce/action-scheduler "$runtime/vendor/woocommerce/"
-          test ! -e "$runtime/vendor-prefixed/woocommerce/action-scheduler"
+        run: bash bin/package.sh "$RUNNER_TEMP/release"
+      - name: Render the Arabic sample using only packaged fonts
+        run: php bin/spike-pdf.php --package "$RUNNER_TEMP/release/rental-manager"
       - name: Install clean WordPress and activate the plugin
         env:
           RM_TEST_WP_DIR: ${{ runner.temp }}/wordpress

@@ -68,8 +68,20 @@ php bin/spike-pdf.php
 
 This CLI-only script creates `tests/artifacts/receipt-sample.pdf` and a font-cache workspace in
 the ignored artifact directory. It does not boot WordPress, connect to the DB or use real data.
-The synthetic sample includes Arabic RTL, bundled mPDF fonts, mixed-direction reference/date,
+The synthetic sample includes Arabic RTL, bundled IBM Plex Sans Arabic Regular/Bold, mixed-direction reference/date,
 Arabic-Indic amounts and the not-a-tax-invoice disclaimer. There are no remote image/font resources.
+
+T0.8 uses only `assets/fonts/IBMPlexSansArabic-{Regular,Bold}.ttf`, with its SIL OFL license.
+OpenType layout is enabled (`useOTL = 0xFF`) and kashida is off. Automatic font switching and
+CJK/substitution fallbacks are disabled: Arabic and Latin share Plex. The local rendered sample
+was visually inspected for connected Arabic, bold headings, Latin references and Arabic-Indic
+digits; Noto Naskh Arabic fallback was unnecessary (see QUESTIONS.md).
+
+`bin/package.sh` strips mPDF's `ttfonts/`, core-font metrics, collation tables, CJK font data,
+non-Arabic line-break dictionaries and unused language font CSS from the staged release only.
+CI renders the sample again from that slim package and exercises the authenticated System
+Health PDF response after clean WordPress activation. [AHMED] must still repeat the PDF download
+and visual shaping check on the real hosting; these tests do not establish its configuration.
 
 Linux CI generates the PDF with the Strauss-prefixed loader in each existing backend cell.
 Native Windows development may use the unprefixed Composer loader and prints that limitation;

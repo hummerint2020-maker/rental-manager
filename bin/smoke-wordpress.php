@@ -50,6 +50,14 @@ if (!function_exists('as_enqueue_async_action') || !class_exists('ActionSchedule
 }
 
 load_textdomain('rental-manager', WP_PLUGIN_DIR . '/rental-manager/languages/rental-manager-ar.mo');
+// Exercise the real admin download against the slim release, with no development fonts available.
+wp_set_current_user((int) username_exists('smoke-admin'));
+$_SERVER['REQUEST_METHOD'] = 'POST';
+$_REQUEST['_wpnonce'] = wp_create_nonce('rm_health_pdf');
+$pdf = (new \RentalManager\Kernel\Health\PdfDownload())->response();
+if (!str_starts_with($pdf['body'], '%PDF-') || strlen($pdf['body']) < 1000) {
+    throw new RuntimeException('The packaged System Health PDF download failed.');
+}
 $message = 'Rental Manager requires PHP 8.1 or later and WordPress 7.0 or later.';
 if (translate($message, 'rental-manager') === $message) {
     throw new RuntimeException('Bundled Arabic translations did not load.');

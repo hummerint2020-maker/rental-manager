@@ -32,7 +32,7 @@ final class PdfSample
         );
         $dir = $locale === 'ar' ? 'rtl' : 'ltr';
         return '<html lang="' . $locale . '" dir="' . $dir . '"><head><style>'
-            . 'body{font-family:dejavusans;font-size:13pt;color:#17312e}h1{font-size:25pt}'
+            . 'body{font-family:plexsansarabic;font-size:13pt;color:#17312e}h1{font-size:25pt}'
             . 'table{width:100%;border-collapse:collapse;margin-top:20px}td,th{padding:12px;border:1px solid #ccd5d3}'
             . '.notice{color:#586d68;font-size:11pt}.number{direction:ltr}</style></head><body>'
             . '<h1>' . $t['title'] . '</h1><p class="notice">' . $t['sample'] . '</p>'
