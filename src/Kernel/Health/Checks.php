@@ -15,7 +15,7 @@ final class Checks
     {
         return [
             new Result('web_server', 'info', 'Web server software', $server),
-            new Result('wordpress', 'info', 'WordPress version', $wordpress),
+            self::result('wordpress', version_compare($wordpress, '7.0', '>='), 'WordPress version', $wordpress),
         ];
     }
 

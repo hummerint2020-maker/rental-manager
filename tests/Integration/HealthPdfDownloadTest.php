@@ -6,6 +6,8 @@ namespace RentalManager\Tests\Integration;
 
 use RentalManager\Kernel\Health\AdminPage;
 use RentalManager\Kernel\Health\PdfDownload;
+use RentalManager\Kernel\Health\PdfRenderer;
+use RentalManager\Vendor\Mpdf\Mpdf;
 use RentalManager\Tests\Support\DatabaseTestCase;
 use RuntimeException;
 
@@ -90,6 +92,51 @@ final class HealthPdfDownloadTest extends DatabaseTestCase
         ], $response['headers']);
         self::assertSame($before, glob($uploads['basedir'] . '/rm-health-pdf-*'));
         self::assertFalse(class_exists(\Mpdf\Mpdf::class, false));
+    }
+
+    public function testDeprecationsInsideRenderingDoNotFailOrCorruptTheDownload(): void
+    {
+        $this->user('administrator');
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_REQUEST['_wpnonce'] = wp_create_nonce('rm_health_pdf');
+        $renderer = new PdfRenderer(static function (array $config): Mpdf {
+            trigger_error('Rendering dependency deprecation fixture.', E_USER_DEPRECATED);
+            // Exercise the native-deprecation branch too, without relying on a PHP-version-specific API.
+            $handler = set_error_handler(static fn (): bool => false);
+            restore_error_handler();
+            self::assertIsCallable($handler);
+            self::assertTrue($handler(E_DEPRECATED, 'Native rendering deprecation fixture.', __FILE__, __LINE__));
+            return new Mpdf($config);
+        });
+        $reporting = error_reporting(E_ALL);
+        ob_start();
+        try {
+            $response = (new PdfDownload($renderer))->response();
+            self::assertStringStartsWith('%PDF-', $response['body']);
+            self::assertSame('', ob_get_contents(), 'Deprecations must not leak into the PDF response.');
+        } finally {
+            ob_end_clean();
+            error_reporting($reporting);
+        }
+    }
+
+    public function testRealRenderingWarningsStillFailTheDownload(): void
+    {
+        $this->user('administrator');
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_REQUEST['_wpnonce'] = wp_create_nonce('rm_health_pdf');
+        $renderer = new PdfRenderer(static function (array $config): Mpdf {
+            trigger_error('Rendering warning fixture.', E_USER_WARNING);
+            return new Mpdf($config);
+        });
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('The sample PDF could not be generated.');
+        $reporting = error_reporting(E_ALL);
+        try {
+            (new PdfDownload($renderer))->response();
+        } finally {
+            error_reporting($reporting);
+        }
     }
 
     public function testPdfFailureShowsOnlyTheTranslatedPublicError(): void

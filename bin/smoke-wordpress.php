@@ -21,6 +21,9 @@ $_SERVER['REQUEST_METHOD'] = 'GET';
 $_SERVER['SERVER_PROTOCOL'] = 'HTTP/1.1';
 
 require ABSPATH . 'wp-settings.php';
+if (getenv('WP_VERSION') === false || $GLOBALS['wp_version'] !== getenv('WP_VERSION')) {
+    throw new RuntimeException('The installed WordPress version does not match the pinned CI version.');
+}
 require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 require_once ABSPATH . 'wp-admin/includes/plugin.php';
 add_filter('pre_wp_mail', static fn () => false);
@@ -47,8 +50,9 @@ if (!function_exists('as_enqueue_async_action') || !class_exists('ActionSchedule
 }
 
 load_textdomain('rental-manager', WP_PLUGIN_DIR . '/rental-manager/languages/rental-manager-ar.mo');
-$message = 'Rental Manager requires PHP 8.1 or later and WordPress 6.4 or later.';
+$message = 'Rental Manager requires PHP 8.1 or later and WordPress 7.0 or later.';
 if (translate($message, 'rental-manager') === $message) {
     throw new RuntimeException('Bundled Arabic translations did not load.');
 }
-echo "Clean WordPress 6.4 activation, isolated autoloading and Arabic translation passed.\n";
+echo 'Clean WordPress ' . $GLOBALS['wp_version']
+    . " activation, isolated autoloading and Arabic translation passed.\n";

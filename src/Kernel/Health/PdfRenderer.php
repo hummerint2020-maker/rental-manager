@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace RentalManager\Kernel\Health;
 
 use ErrorException;
+use Closure;
 use FilesystemIterator;
 use RentalManager\Vendor\Mpdf\Mpdf;
 use RuntimeException;
@@ -12,7 +13,12 @@ use RuntimeException;
 /** Web spike: the plugin's isolated loader must already be active. */
 final class PdfRenderer
 {
-    public static function render(string $uploads): string
+    /** @param null|Closure(array<string, mixed>): Mpdf $createPdf */
+    public function __construct(private readonly ?Closure $createPdf = null)
+    {
+    }
+
+    public function render(string $uploads): string
     {
         $base = realpath($uploads);
         if ($base === false || !is_dir($base)) {
@@ -23,20 +29,26 @@ final class PdfRenderer
             throw new RuntimeException('PDF workspace unavailable.');
         }
         set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
+            // Consume deprecations only within rendering so they cannot corrupt the PDF stream.
+            // Other diagnostics remain strict; the previous handler is restored below.
+            if ($severity === E_DEPRECATED || $severity === E_USER_DEPRECATED) {
+                return true;
+            }
             if (!(error_reporting() & $severity)) {
                 return false;
             }
             throw new ErrorException($message, 0, $severity, $file, $line);
         });
         try {
-            $pdf = new Mpdf([
+            $config = [
                 'mode' => 'utf-8',
                 'format' => 'A4',
                 'default_font' => 'dejavusans',
                 'tempDir' => $directory,
                 'autoScriptToLang' => true,
                 'autoLangToFont' => true,
-            ]);
+            ];
+            $pdf = $this->createPdf === null ? new Mpdf($config) : ($this->createPdf)($config);
             $pdf->SetDirectionality('rtl');
             $pdf->WriteHTML(PdfSample::html());
             $body = $pdf->Output('', 'S');

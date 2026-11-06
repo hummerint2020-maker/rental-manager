@@ -10,6 +10,9 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  WP_VERSION: '7.1.4'
+
 permissions:
   contents: read
 
@@ -21,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.1', '8.3']
+        php: ['8.1', '8.4', '8.5']
         database:
           - name: MySQL 8.0
             image: mysql:8.0
@@ -62,7 +65,7 @@ jobs:
           WP_CORE_DIR: ${{ runner.temp }}/rm-integration-core
           WP_TESTS_DIR: ${{ runner.temp }}/rm-integration-tests
         run: |
-          bash bin/install-wp-tests.sh rm_test_rental_manager root test-password 127.0.0.1:3306 6.4
+          bash bin/install-wp-tests.sh rm_test_rental_manager root test-password 127.0.0.1:3306 "$WP_VERSION"
           composer test:integration
       - name: Assemble runtime release with the original Action Scheduler
         run: |
@@ -73,12 +76,12 @@ jobs:
           test -f "$runtime/build/manifest.json"
           cp -R vendor/woocommerce/action-scheduler "$runtime/vendor/woocommerce/"
           test ! -e "$runtime/vendor-prefixed/woocommerce/action-scheduler"
-      - name: Install clean WordPress 6.4 and activate the plugin
+      - name: Install clean WordPress and activate the plugin
         env:
           RM_TEST_WP_DIR: ${{ runner.temp }}/wordpress
           RM_TEST_DB_PASSWORD: test-password
         run: |
-          curl --fail --silent --show-error --location https://wordpress.org/wordpress-6.4.tar.gz | tar -xz -C "$RUNNER_TEMP"
+          curl --fail --silent --show-error --location "https://wordpress.org/wordpress-${WP_VERSION}.tar.gz" | tar -xz -C "$RUNNER_TEMP"
           ln -s "$RUNNER_TEMP/release/rental-manager" "$RM_TEST_WP_DIR/wp-content/plugins/rental-manager"
           php bin/smoke-wordpress.php
 

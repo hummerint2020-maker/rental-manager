@@ -8,7 +8,7 @@ use RentalManager\Tests\Support\WordPressTestInstaller;
 require dirname(__DIR__) . '/vendor/autoload.php';
 global $wpdb, $current_site, $current_blog, $wp_rewrite, $shortcode_tags, $wp, $phpmailer, $wp_theme_directories;
 global $table_prefix;
-$tests = getenv('WP_TESTS_DIR') ?: sys_get_temp_dir() . '/rm-wp-tests-6.4';
+$tests = getenv('WP_TESTS_DIR') ?: sys_get_temp_dir() . '/rm-wp-tests-' . (getenv('WP_VERSION') ?: '7.1.4');
 $config = $tests . '/wp-tests-config.php';
 if (!is_file($config) || !is_file($tests . '/includes/functions.php')) {
     throw new RuntimeException('WordPress test library missing. Run bin/install-wp-tests.sh; see docs/TESTING.md.');
@@ -19,7 +19,8 @@ if (!is_readable(dirname(__DIR__) . '/vendor-prefixed/autoload.php')) {
     throw new RuntimeException('Build the isolated plugin dependencies on Linux/WSL before integration tests.');
 }
 
-// Use the official installer/factories without the PHPUnit-9-only WP_UnitTestCase compatibility layer.
+// WordPress 7.1.4 still calls the removed PHPUnit parseTestMethodAnnotations API.
+// Reuse its installer/helpers/factories without loading that compatibility layer.
 $process = proc_open([PHP_BINARY, $tests . '/includes/install.php', $config], [1 => STDOUT, 2 => STDERR], $pipes);
 if (!is_resource($process) || proc_close($process) !== 0) {
     throw new RuntimeException('Official WordPress test installation failed.');
