@@ -79,12 +79,18 @@ AC: unit tests incl. 31 Jan + 1 month = 28/29 Feb, rounding table tests, Money n
 **T1.5 Tenancy.** `AccountContext`, `AccountResolver` (interface; real implementation in Phase 2), `TenantRepository` base receiving context,
 `TenantQuery` builder that throws if an `rm_*` tenant table lacks the account predicate, `CrossAccount` marker. Request-scoped context holder that throws when empty.
 AC: unit tests for the guard; a repository without context cannot be constructed.
+Container follow-ups (from the T1.1 review): add a **scoped** lifetime created per `AccountContext`; any service that depends on
+`AccountContext` (tenant repositories, use cases built on them) can only be registered as scoped/transient — registering it as
+singleton throws. Typed constructor parameters prefer a registered service over the declared default.
+`TenantRepository` base gets `insert(table, columns)` / `update(table, columns, id)` helpers that emit literal `NULL` for null
+values in column lists only (from the T1.2 review); WHERE helpers keep rejecting null (use `IS NULL`).
+AC also: two scopes for accounts A and B in one PHP process get distinct repository instances and only see their own rows.
 
 **T1.6 Audit writer.** `rm_audit_log` migration; `AuditLog::record(action, entityType, entityId, before, after, meta)` writing inside the UoW;
 diff helper; request_id + IP + actor from context. AC: integration test: audit row disappears when UoW rolls back.
 
 **T1.7 Outbox + jobs.** `rm_outbox` migration; `EventRecorder` in UoW; dispatcher job via Action Scheduler (batch 50, retries with backoff, dead-letter status);
-`JobRunner` building `AccountContext` from payload. Listener registration per module. AC: event dispatched only after commit; failed listener retried; context set during listener.
+`JobRunner` building `AccountContext` from payload and opening a **new container scope per job** (several jobs for different accounts run in one request). Listener registration per module. AC: event dispatched only after commit; failed listener retried; context set during listener.
 
 **T1.8 Sequences.** `rm_sequences(account_id, name, period, next_value)`; `Sequences::next(name, period)` with `FOR UPDATE` inside the UoW.
 AC: concurrency integration test (two connections, on `CommittedDatabaseTestCase`) never duplicates; rollback returns the number.
