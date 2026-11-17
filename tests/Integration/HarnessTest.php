@@ -11,6 +11,24 @@ use RentalManager\Tests\Support\World;
 
 final class HarnessTest extends DatabaseTestCase
 {
+    public function testKernelBootLoadsEmptyDefinitionsOnceWithoutExposingItsContainer(): void
+    {
+        $kernel = Kernel::boot();
+        self::assertSame($kernel, Kernel::boot());
+        self::assertCount(13, $kernel->modules());
+        foreach ($kernel->modules() as $name => $definition) {
+            self::assertSame($name, $definition->name);
+            self::assertNull($definition->services);
+            self::assertSame([], $definition->routes);
+            self::assertSame([], $definition->migrations);
+            self::assertSame([], $definition->listeners);
+            self::assertSame([], $definition->jobs);
+        }
+        $publicMethods = (new \ReflectionClass($kernel))->getMethods(\ReflectionMethod::IS_PUBLIC);
+        $names = array_map(static fn (\ReflectionMethod $method): string => $method->name, $publicMethods);
+        self::assertNotContains('container', $names);
+    }
+
     public function testFixtureTablesUseThePortableCollationAndThePinnedProductionDatabase(): void
     {
         $version = (string) $this->db->get_var('SELECT VERSION()');

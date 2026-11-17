@@ -55,6 +55,12 @@ dependency so architecture checks do not rely on another tool continuing to requ
 
 ## Regression tests
 
+T1.1 classifies Kernel/Container as infrastructure, including any future container interfaces.
+Domain/Application imports, constructor types and class-name strings referring to that namespace
+are rejected by the AST guard as service-locator dependencies; Deptrac rejects the same class and
+interface edges. Module wiring may use the container. See CONTAINER.md for the minimal API,
+lifetimes and module-definition lifecycle; no container accessor is exposed by Kernel.
+
 `tests/Architecture/DeptracPolicyTest.php` runs the real config against generated dependencies:
 all cross-module API directions, allowed Kernel interfaces/values, forbidden concrete adapters,
 forbidden implementation imports, and the read-only Leasing query exception.

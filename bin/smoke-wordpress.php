@@ -41,6 +41,10 @@ if (is_wp_error($result) || !is_plugin_active('rental-manager/rental-manager.php
 if (!class_exists(\RentalManager\Kernel\Kernel::class) || !class_exists(\RentalManager\Vendor\Mpdf\Mpdf::class)) {
     throw new RuntimeException('The isolated autoloader did not load the kernel and PDF library.');
 }
+$kernel = \RentalManager\Kernel\Kernel::boot();
+if (count($kernel->modules()) !== 13 || \RentalManager\Kernel\Kernel::boot() !== $kernel) {
+    throw new RuntimeException('The packaged kernel did not load all module definitions exactly once.');
+}
 if (class_exists('Mpdf\\Mpdf') || class_exists('PHPUnit\\Framework\\TestCase')) {
     throw new RuntimeException('The plugin loaded unprefixed vendor or development classes.');
 }

@@ -93,7 +93,8 @@ final class BoundaryInspector
 
         $infrastructure = $layer === 'Infrastructure'
             || (bool) preg_match(
-                '#^src/Kernel/(Db|Migrations|Outbox|Jobs|Sequences|Storage|Audit|Health|Http|Security|I18n)/#',
+                '#^src/Kernel/(Container|Db|Migrations|Outbox|Jobs|Sequences|Storage|Audit|Health|Http|Security|'
+                    . 'I18n)/#',
                 $path
             );
         $pure = in_array($layer, ['Domain', 'Application', 'Api'], true)
@@ -107,6 +108,13 @@ final class BoundaryInspector
         $errors = [];
         foreach ($nodes as $node) {
             $reason = null;
+            if (in_array($layer, ['Domain', 'Application'], true)) {
+                $reference = $node instanceof Node\Name ? $node->toString()
+                    : ($node instanceof String_ ? $node->value : '');
+                if (str_starts_with(strtolower(ltrim($reference, '\\')), 'rentalmanager\\kernel\\container\\')) {
+                    $reason = 'Service locator/container dependencies are forbidden in Domain and Application.';
+                }
+            }
             if ($node instanceof Stmt\Namespace_) {
                 $expected = 'RentalManager\\' . str_replace('/', '\\', dirname(substr($path, 4)));
                 if ($node->name === null || $node->name->toString() !== $expected) {
