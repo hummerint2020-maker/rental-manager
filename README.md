@@ -57,6 +57,7 @@ For the Node 24 frontend setup, production build and browser tests, see
 
 - [`AGENTS.md`](AGENTS.md) — engineering rules for humans and coding agents
 - [`docs/CONTAINER.md`](docs/CONTAINER.md) — T1.1 container lifetimes and module registration
+- [`docs/DB.md`](docs/DB.md) — T1.2 prepared connection, transaction strategies and buffered writes
 - [`docs/DOMAIN.md`](docs/DOMAIN.md) — business rules, states, invariants, schema
 - [`docs/PLAN.md`](docs/PLAN.md) — phased implementation plan (Phase 0 → 11)
 - [`docs/CODEX_PROMPTS.md`](docs/CODEX_PROMPTS.md) — prompts for running each phase with Codex
