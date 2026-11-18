@@ -12,6 +12,9 @@ if (count($arguments) !== 2) {
     throw new RuntimeException('Usage: php bin/check-package.php /path/to/package');
 }
 $root = $arguments[1] . '/rental-manager';
+if (!is_dir($root . '/migrations')) {
+    throw new RuntimeException('Missing runtime migrations directory.');
+}
 foreach (
     [
         'rental-manager.php', 'build/manifest.json', 'vendor-prefixed/autoload.php',

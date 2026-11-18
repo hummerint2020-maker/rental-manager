@@ -3,6 +3,9 @@ msgstr ""
 "Language: ar\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
+msgid "Rental Manager could not update its database. Ask the administrator to check the migration journal."
+msgstr "تعذر تحديث قاعدة بيانات مدير الإيجارات. اطلب من مسؤول النظام مراجعة سجل ترحيل قاعدة البيانات."
+
 msgid "Download sample PDF"
 msgstr "تحميل ملف PDF التجريبي"
 

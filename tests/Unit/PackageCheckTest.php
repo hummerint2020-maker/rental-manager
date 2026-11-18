@@ -16,6 +16,7 @@ final class PackageCheckTest extends TestCase
     protected function setUp(): void
     {
         $this->directory = sys_get_temp_dir() . '/rm-package-' . bin2hex(random_bytes(12));
+        mkdir($this->directory . '/rental-manager/migrations', 0700, true);
         foreach (
             [
                 'rental-manager.php', 'build/manifest.json', 'vendor-prefixed/autoload.php',
@@ -66,6 +67,12 @@ final class PackageCheckTest extends TestCase
         self::assertNotSame(0, $this->check());
         $this->write('assets/fonts/IBMPlexSansArabic-Bold.ttf', 'fixture');
         unlink($this->directory . '/rental-manager/vendor/woocommerce/action-scheduler/action-scheduler.php');
+        self::assertNotSame(0, $this->check());
+    }
+
+    public function testRejectsMissingMigrationsDirectory(): void
+    {
+        rmdir($this->directory . '/rental-manager/migrations');
         self::assertNotSame(0, $this->check());
     }
 

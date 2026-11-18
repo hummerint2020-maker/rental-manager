@@ -26,8 +26,13 @@ $rmRequirementsMet = version_compare(PHP_VERSION, '8.1', '>=')
 $rmDependenciesMet = is_readable(__DIR__ . '/vendor-prefixed/autoload.php')
     && is_readable(__DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php');
 
-register_activation_hook(__FILE__, static function () use ($rmRequirementsMet, $rmDependenciesMet) {
+register_activation_hook(__FILE__, static function () use ($rmDependenciesMet) {
+    // Activation can happen after bootstrap; validate the host before any schema work.
+    $rmRequirementsMet = version_compare(PHP_VERSION, '8.1', '>=')
+        && isset($GLOBALS['wp_version'])
+        && version_compare($GLOBALS['wp_version'], '7.0', '>=');
     if ($rmRequirementsMet && $rmDependenciesMet) {
+        \RentalManager\Kernel\Kernel::activate();
         return;
     }
 

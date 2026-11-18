@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 // Function declarations are separate from the standalone probe's execution.
-function add_action(string $hook, callable $callback): void
+function add_action(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 1): void
 {
     $GLOBALS['hooks'][$hook][] = $callback;
 }

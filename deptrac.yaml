@@ -33,7 +33,7 @@ deptrac:
               value: '^RentalManager\\Kernel\\'
           must_not:
             - type: classLike
-              value: '^RentalManager\\Kernel\\Container\\'
+              value: '^RentalManager\\Kernel\\(Container|Migrations)\\'
             - type: layer
               value: KernelShared
             - type: layer

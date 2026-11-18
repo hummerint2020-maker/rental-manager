@@ -27,6 +27,7 @@ final class Kernel
         $kernel = new self(new Container());
         $kernel->modules = (new ModuleLoader())->load($kernel->container, dirname(__DIR__) . '/Modules');
         Health\AdminPage::register();
+        (new Migrations\Lifecycle(dirname(__DIR__, 2) . '/rental-manager.php'))->register();
         self::$instance = $kernel;
         return $kernel;
     }
@@ -35,5 +36,10 @@ final class Kernel
     public function modules(): array
     {
         return $this->modules;
+    }
+
+    public static function activate(): void
+    {
+        (new Migrations\Lifecycle(dirname(__DIR__, 2) . '/rental-manager.php'))->activate();
     }
 }
