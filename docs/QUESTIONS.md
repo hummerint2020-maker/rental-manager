@@ -20,6 +20,17 @@ Agents add open questions here. Ahmed answers inline and moves resolved items to
 
 ## Resolved
 
+**Approved by Ahmed on 2026-11-18** (decisions delegated to the Claude review; the table rows above keep their
+text until they are moved here after PR #25 merges). The recommended defaults stand for:
+- T0.1 — prefix dependencies with Strauss on Linux/WSL/CI only.
+- T0.2 — `Leasing/Api/Query` for read-only contracts; the listed Kernel folders are infrastructure; `nikic/php-parser` as a direct dev dependency.
+- T0.3 — PHPUnit 10 bridge over the official test library (still required on WordPress 7.1.4); test-only `rm_test_*` fixtures until production migrations replace them in Phase 2.
+- T0.4 — explicit frontend placeholder gate (now superseded by the real frontend).
+- T0.6 — control-plane health canary, disposable storage probe (replaced in T3.4), separate DB connection with honest *pending*.
+- T1.1 — container defaults, **with the review follow-ups in PLAN.md T1.5**: scoped lifetime per `AccountContext` (no singletons that depend on it) and a registered service wins over a constructor default.
+- T1.2 — mandatory pre-commit flusher until T1.6/T1.7; WordPress prepare + native `mysqli` execution without reconnect/replay.
+
+
 T0.8 verification (no new decision): IBM Plex Sans Arabic Regular and Bold from the pinned
 Google Fonts distribution (see assets/fonts/README.md) render joined Arabic correctly with
 useOTL=0xFF and useKashida=0. The synthetic receipt was rendered and visually inspected for
