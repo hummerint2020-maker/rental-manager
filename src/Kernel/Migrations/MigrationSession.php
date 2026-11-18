@@ -54,10 +54,11 @@ final class MigrationSession
             throw new MigrationException('This database session already owns the migration lock.');
         }
         $acquired = $this->scalar($handle, $this->prepare('SELECT GET_LOCK(%s, 0)', $lock));
+        if ($acquired === '0') {
+            throw new MigrationLockBusy('Another migration run holds the lock.');
+        }
         if ($acquired !== '1') {
-            throw new MigrationException(
-                $acquired === '0' ? 'Another migration run holds the lock.' : 'Could not acquire the migration lock.'
-            );
+            throw new MigrationException('Could not acquire the migration lock.');
         }
 
         $this->handle = $handle;
@@ -150,7 +151,10 @@ final class MigrationSession
             }
             MigrationCatalog::validateIds([$id]);
             if ($row['applied_at'] === null) {
-                throw new MigrationException('Migration ' . $id . ' is incomplete. Schema reconciliation is required.');
+                throw new MigrationException(
+                    'Migration ' . $id . ' is incomplete. Schema reconciliation is required.',
+                    migrationId: $id
+                );
             }
             $applied[] = $id;
         }

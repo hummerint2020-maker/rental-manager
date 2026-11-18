@@ -3,6 +3,45 @@ msgstr ""
 "Language: ar\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
+msgid "Database schema"
+msgstr "مخطط قاعدة البيانات"
+
+msgid "Stored: %1$s; plugin: %2$s; failed migration: %3$s"
+msgstr "الإصدار المسجل: %1$s؛ إصدار الإضافة: %2$s؛ الترحيل المتعثر: %3$s"
+
+msgid "Not installed"
+msgstr "غير مثبت"
+
+msgid "None"
+msgstr "لا يوجد"
+
+msgid "Rental Manager is waiting for a database upgrade."
+msgstr "مدير الإيجارات بانتظار تحديث قاعدة البيانات."
+
+msgid "Open System Health"
+msgstr "فتح سلامة النظام"
+
+msgid "Migration recovery"
+msgstr "استرجاع ترحيلات قاعدة البيانات"
+
+msgid "The journal could not be read. Check database access before retrying."
+msgstr "تعذرت قراءة سجل الترحيلات. تحقّق من الاتصال بقاعدة البيانات قبل إعادة المحاولة."
+
+msgid "Incomplete migrations"
+msgstr "ترحيلات غير مكتملة"
+
+msgid "An incomplete migration must be reconciled with the actual schema before retrying. Verify every effect, then reconcile its journal entry; never delete history blindly."
+msgstr "يجب مطابقة الترحيل غير المكتمل مع مخطط قاعدة البيانات الفعلي قبل إعادة المحاولة. تحقّق من كل تغيير ثم صحّح حالة سجله بما يطابق الواقع؛ لا تحذف السجل دون تحقق."
+
+msgid "Retry migrations"
+msgstr "إعادة محاولة الترحيلات"
+
+msgid "You are not allowed to retry migrations."
+msgstr "غير مسموح لك بإعادة محاولة الترحيلات."
+
+msgid "Retry migrations requires POST."
+msgstr "تتطلب إعادة محاولة الترحيلات طلب POST."
+
 msgid "Rental Manager could not update its database. Ask the administrator to check the migration journal."
 msgstr "تعذر تحديث قاعدة بيانات مدير الإيجارات. اطلب من مسؤول النظام مراجعة سجل ترحيل قاعدة البيانات."
 

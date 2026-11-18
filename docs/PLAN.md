@@ -98,6 +98,8 @@ AC: concurrency integration test (two connections, on `CommittedDatabaseTestCase
 **T1.9 REST base.** `Router` (declares route, method, permission or `public`, idempotent flag), `BaseController`, request validation helpers,
 error envelope + exception mapping (DomainRuleException→422, NotFound→404, Conflict→409...), request_id header, `no-store` headers,
 pagination/filter/sort whitelist helpers, `Idempotency` middleware with `rm_idempotency_keys`. Rate limiter on DB table `rm_rate_limits`.
+Before serving any Rental Manager route, consult `Kernel\Migrations\SchemaGate::isReady()`; when false return HTTP 503 with
+`Retry-After: 60`. Gate only this plugin's routes; WordPress front end, wp-admin, wp-login and System Health remain available.
 AC: API tests for envelope, 404 mapping, idempotent replay, 409 on key reuse with different body.
 
 **T1.10 Guard tests.** `RouteCoverageTest` (every route declares permission or public), `IsolationMatrixTest` framework that,
@@ -128,6 +130,8 @@ Update `tests/Api/ApiHarnessTest` to use a test-only route instead of `/wp/v2/us
 AC: tests asserting each restriction; `rm_client` capability list equals `['read']`.
 
 **T2.6 App shell.** Rewrite `/app/*` → `templates/app.php` (no theme, no `wp_head` from theme; enqueue only built SPA + nonce + boot data), login page `/app/login`.
+Before rendering this plugin's `/app` shell, check `Kernel\Migrations\SchemaGate::isReady()`; when false return HTTP 503 with
+`Retry-After: 60`. Never apply this gate to unrelated WordPress pages, wp-admin, wp-login or System Health.
 SPA base path comes from boot data (no hardcoded `/app/`; WordPress may be in a subdirectory); locale comes from `/me` settings. SPA: auth guard, account switcher, layout with owner sidebar and renter bottom nav, i18n, RTL, nonce refresh on `rest_cookie_invalid_nonce`, global error toast with request_id.
 AC: E2E: owner logs in and sees empty dashboard in Arabic; renter sees renter home; client hitting /wp-admin is redirected.
 WF: RenterLogin, Main (shell only).

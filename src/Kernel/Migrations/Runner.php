@@ -30,35 +30,65 @@ final class Runner
     /**
      * @param (Closure(): void)|null $after
      * @param (Closure(): bool)|null $before
+     * @param (Closure(Throwable): void)|null $onFailure
      */
-    public function run(?Closure $after = null, ?Closure $before = null): void
+    public function run(?Closure $after = null, ?Closure $before = null, ?Closure $onFailure = null): void
     {
-        $this->session->withLock(function () use ($after, $before): void {
-            if ($before !== null && !$before()) {
-                return;
-            }
-            $applied = $this->session->appliedMigrations();
-            if ($applied !== array_slice(array_keys($this->migrations), 0, count($applied))) {
-                throw new MigrationException('Applied migrations do not match the migration catalog.');
-            }
-
-            $schema = $this->session->schema();
-            foreach (array_slice($this->migrations, count($applied)) as $id => $migration) {
-                $this->session->markStarted($id);
+        $this->session->withLock(function () use ($after, $before, $onFailure): void {
+            try {
+                $this->apply($after, $before);
+            } catch (Throwable $error) {
                 try {
-                    $migration->up($schema);
-                    $this->session->markApplied($id);
-                } catch (Throwable $error) {
-                    throw new MigrationException(
-                        'Migration ' . $id . ' stopped before completion. Schema reconciliation is required.',
-                        (int) $error->getCode()
-                    );
+                    if ($onFailure !== null) {
+                        $this->session->assertLock();
+                        $onFailure($error);
+                    }
+                } finally {
+                    throw $error;
                 }
             }
-            if ($after !== null) {
-                $this->session->assertLock();
-                $after();
-            }
         });
+    }
+
+    /**
+     * @param (Closure(): void)|null $after
+     * @param (Closure(): bool)|null $before
+     */
+    private function apply(?Closure $after, ?Closure $before): void
+    {
+        if ($before !== null && !$before()) {
+            return;
+        }
+        $applied = $this->session->appliedMigrations();
+        if ($applied !== array_slice(array_keys($this->migrations), 0, count($applied))) {
+            throw new MigrationException('Applied migrations do not match the migration catalog.');
+        }
+
+        $schema = $this->session->schema();
+        foreach (array_slice($this->migrations, count($applied)) as $id => $migration) {
+            try {
+                $this->session->markStarted($id);
+            } catch (Throwable $error) {
+                throw new MigrationException(
+                    'Could not start migration ' . $id . '.',
+                    (int) $error->getCode(),
+                    migrationId: $id
+                );
+            }
+            try {
+                $migration->up($schema);
+                $this->session->markApplied($id);
+            } catch (Throwable $error) {
+                throw new MigrationException(
+                    'Migration ' . $id . ' stopped before completion. Schema reconciliation is required.',
+                    (int) $error->getCode(),
+                    migrationId: $id
+                );
+            }
+        }
+        if ($after !== null) {
+            $this->session->assertLock();
+            $after();
+        }
     }
 }

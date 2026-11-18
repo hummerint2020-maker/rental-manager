@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RentalManager\Tests\Integration;
 
+use RentalManager\Kernel\Migrations\FailureState;
 use RentalManager\Kernel\Migrations\Lifecycle;
 use RentalManager\Kernel\Migrations\MigrationException;
 use RentalManager\Kernel\Migrations\MigrationSession;
@@ -15,7 +16,9 @@ final class MigrationLifecycleTest extends CommittedDatabaseTestCase
     protected function prepareCommittedFixtures(): void
     {
         $this->trackOption('rm_schema_version');
+        $this->trackOption(FailureState::OPTION);
         delete_option('rm_schema_version');
+        FailureState::clear();
         $this->ownedTable('migrations');
     }
 
@@ -73,22 +76,6 @@ return new class implements \RentalManager\Kernel\Migrations\Migration {
     public function up(\RentalManager\Kernel\Migrations\Schema $schema): void {
         throw new \RuntimeException('private SQL / personal data');
     }
-
-    public function testUnderLockMatchingVersionClearsStaleWordPressCache(): void
-    {
-        update_option('rm_schema_version', '0.0.0');
-        self::assertSame('0.0.0', get_option('rm_schema_version'));
-        $this->db->query($this->db->prepare(
-            'UPDATE %i SET option_value = %s WHERE option_name = %s',
-            $this->db->options,
-            '0.1.0',
-            'rm_schema_version'
-        ));
-        $this->withPlugin(function (Lifecycle $lifecycle): void {
-            $lifecycle->migrate();
-            self::assertSame('0.1.0', get_option('rm_schema_version'));
-        });
-    }
 };
 PHP);
             add_filter('wp_die_handler', static fn () => static function (string $message): void {
@@ -104,6 +91,22 @@ PHP);
                 self::assertStringNotContainsString('private SQL', $error->getMessage());
             }
             self::assertFalse(get_option('rm_schema_version'));
+        });
+    }
+
+    public function testUnderLockMatchingVersionClearsStaleWordPressCache(): void
+    {
+        update_option('rm_schema_version', '0.0.0');
+        self::assertSame('0.0.0', get_option('rm_schema_version'));
+        $this->db->query($this->db->prepare(
+            'UPDATE %i SET option_value = %s WHERE option_name = %s',
+            $this->db->options,
+            '0.1.0',
+            'rm_schema_version'
+        ));
+        $this->withPlugin(function (Lifecycle $lifecycle): void {
+            $lifecycle->migrate();
+            self::assertSame('0.1.0', get_option('rm_schema_version'));
         });
     }
 

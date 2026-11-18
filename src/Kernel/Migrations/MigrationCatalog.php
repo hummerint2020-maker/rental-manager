@@ -36,10 +36,14 @@ final class MigrationCatalog
             try {
                 $migration = (static fn (string $path): mixed => require $path)($file);
             } catch (Throwable $error) {
-                throw new MigrationException('Could not load migration ' . $id . '.', (int) $error->getCode());
+                throw new MigrationException(
+                    'Could not load migration ' . $id . '.',
+                    (int) $error->getCode(),
+                    migrationId: $id
+                );
             }
             if (!$migration instanceof Migration) {
-                throw new MigrationException('Migration ' . $id . ' must return a Migration.');
+                throw new MigrationException('Migration ' . $id . ' must return a Migration.', migrationId: $id);
             }
             $migrations[$id] = $migration;
         }
