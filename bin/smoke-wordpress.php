@@ -45,6 +45,21 @@ $kernel = \RentalManager\Kernel\Kernel::boot();
 if (count($kernel->modules()) !== 13 || \RentalManager\Kernel\Kernel::boot() !== $kernel) {
     throw new RuntimeException('The packaged kernel did not load all module definitions exactly once.');
 }
+$pluginHeader = get_file_data(WP_PLUGIN_DIR . '/rental-manager/rental-manager.php', ['Version' => 'Version']);
+if (get_option('rm_schema_version') !== $pluginHeader['Version']) {
+    throw new RuntimeException('Activation did not record the installed schema version.');
+}
+/** @var wpdb $wpdb */
+$wpdb = $GLOBALS['wpdb'];
+$journal = $wpdb->prefix . 'rm_migrations';
+if (
+    $wpdb->get_var($wpdb->prepare(
+        'SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s',
+        $journal
+    )) !== $journal
+) {
+    throw new RuntimeException('The packaged migration runner did not create its journal.');
+}
 if (class_exists('Mpdf\\Mpdf') || class_exists('PHPUnit\\Framework\\TestCase')) {
     throw new RuntimeException('The plugin loaded unprefixed vendor or development classes.');
 }

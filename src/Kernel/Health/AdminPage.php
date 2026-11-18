@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RentalManager\Kernel\Health;
 
+use RentalManager\Kernel\Migrations\AdminRecovery;
+
 final class AdminPage
 {
     public static function register(): void
@@ -12,6 +14,7 @@ final class AdminPage
         add_action('admin_menu', [$page, 'menu']);
         add_action('admin_post_rm_health_pdf', [new PdfDownload(), 'send']);
         SchedulerProbe::register();
+        (new AdminRecovery())->register();
     }
 
     public function menu(): void
@@ -47,6 +50,8 @@ final class AdminPage
             check_admin_referer('rm_health_checks');
             $results = (new Checks())->run();
         }
+        $recovery = new AdminRecovery();
+        $results[] = $recovery->result();
         echo '<div class="wrap"><h1>' . esc_html__('System Health', 'rental-manager') . '</h1><p>';
         echo esc_html__(
             'Run hosting diagnostics. Temporary database tables and files are removed; '
@@ -76,6 +81,8 @@ final class AdminPage
                 ? __('Not reported', 'rental-manager') : $result->detail;
             echo esc_html($statuses[$result->status]) . '</td><td>' . esc_html($detail) . '</td></tr>';
         }
-        echo '</tbody></table></div>';
+        echo '</tbody></table>';
+        $recovery->render();
+        echo '</div>';
     }
 }

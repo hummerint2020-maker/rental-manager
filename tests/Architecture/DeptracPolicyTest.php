@@ -74,6 +74,8 @@ final class DeptracPolicyTest extends TestCase
             'RentalManager\\Kernel\\Db\\Connection' => false,
             'RentalManager\\Kernel\\Db\\UnitOfWork' => true,
             'RentalManager\\Kernel\\Db\\TransactionalUnitOfWork' => false,
+            'RentalManager\\Kernel\\Migrations\\Migration' => true,
+            'RentalManager\\Kernel\\Migrations\\Schema' => false,
             'RentalManager\\Kernel\\Http\\Router' => true,
             'RentalManager\\Kernel\\Storage\\Storage' => true,
             'RentalManager\\Kernel\\Tenancy\\AccountContext' => false,
@@ -113,6 +115,9 @@ final class DeptracPolicyTest extends TestCase
             ['Domain', 'Kernel\\Storage\\Storage', true],
             ['Application', 'Kernel\\Db\\UnitOfWork', false],
             ['Application', 'Kernel\\Db\\TransactionalUnitOfWork', true],
+            ['Application', 'Kernel\\Migrations\\Migration', true],
+            ['Application', 'Kernel\\Migrations\\Schema', true],
+            ['Domain', 'Kernel\\Migrations\\Migration', true],
             ['Application', 'Kernel\\Http\\Router', false],
             ['Application', 'Kernel\\Storage\\Storage', false],
         ];

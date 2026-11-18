@@ -72,8 +72,7 @@ Future modules extend the builder using their production migrations; fixture ids
 Crockford-compatible values, not the Phase 1 production ULID generator.
 
 DDL runs before transactions because MySQL DDL commits implicitly. Tests must not issue DDL or start
-nested transactions inside DatabaseTestCase. Later transaction/concurrency tests will need their own
-connection/cleanup lifecycle. The smoke test inserts a WordPress user and a fixture-table row, rolls
+nested transactions inside DatabaseTestCase. The smoke test inserts a WordPress user and a fixture-table row, rolls
 back, clears caches, and verifies neither remains. Another test verifies cross-account FK rejection.
 The API suite dispatches a real WordPress REST request as an account's fixture user.
 
@@ -128,3 +127,20 @@ build, strips unused mPDF resources, writes BUILD.txt and verifies its ZIP and s
 CI runs this in all seven backend cells before the clean-install smoke, which renders through
 the real authorized System Health download. Native Windows can run the PHP checks and native
 mPDF spike, but Linux CI remains required for Strauss and assembled-release checks.
+
+## Committed database tests
+
+Extend `CommittedDatabaseTestCase` for migration tests and other tests that need DDL visible to
+another connection. It uses the same disposable-database guard as the integration bootstrap
+and requires an idle WordPress connection in autocommit mode. Keep `World` on `DatabaseTestCase`, where
+rollback removes the shared fixture rows and users it creates.
+
+- Reserve each test table with `ownedTable($suffix)` before passing its name to DDL or running a
+  migration that creates it. Reserve referenced tables before referring tables so cleanup drops
+  them in reverse order. `migrationPrefix()` returns the test's unique prefix for runner wiring.
+- When inserting into a shared `FixtureSchema` table, call `trackFixtureRow($fixture, $id)`
+  immediately after each successful insert.
+- Use `createOwnedUser()` to register WordPress fixture users as they are created. Call
+  `trackOption($name)` before changing a plugin option so teardown restores its original state.
+- For setup that needs these helpers, override `prepareCommittedFixtures()`. Registered cleanup
+  runs even if that method fails partway through.

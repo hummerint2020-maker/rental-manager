@@ -29,7 +29,10 @@ if ($arguments[4] === 'repeat') {
     require $root . '/rental-manager.php';
 }
 
-if ($arguments[4] === 'activate') {
+if ($arguments[4] === 'activate-after-downgrade') {
+    $GLOBALS['wp_version'] = '6.9.99';
+}
+if (in_array($arguments[4], ['activate', 'activate-after-downgrade'], true)) {
     try {
         ($GLOBALS['activation_hook'])();
     } catch (RuntimeException $exception) {

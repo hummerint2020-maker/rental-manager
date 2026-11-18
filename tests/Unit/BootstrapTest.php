@@ -153,6 +153,18 @@ final class BootstrapTest extends TestCase
         self::assertNull($result['die_message']);
     }
 
+    public function testActivationRechecksHostVersionBeforeRunningMigrations(): void
+    {
+        $this->installAutoloaders();
+        $this->installScheduler();
+        $result = $this->probe('7.1.4', 'admin', 'activate-after-downgrade');
+        self::assertTrue($result['deactivated']);
+        self::assertSame(
+            'Rental Manager requires PHP 8.1 or later and WordPress 7.0 or later.',
+            $result['die_message']
+        );
+    }
+
     private function installScheduler(): void
     {
         $directory = $this->pluginDirectory . '/vendor/woocommerce/action-scheduler';
@@ -173,7 +185,7 @@ final class BootstrapTest extends TestCase
                 $source .= ' namespace RentalManager\\Kernel; final class Kernel {'
                     . ' public static function boot(): void {'
                     . ' if ($GLOBALS["scheduler_loads"] !== 1) { throw new \\RuntimeException("Scheduler missing"); }'
-                    . ' $GLOBALS["booted"] = true; } }';
+                    . ' $GLOBALS["booted"] = true; } public static function activate(): void {} }';
             }
             file_put_contents($this->pluginDirectory . '/' . $directory . '/autoload.php', $source);
         }

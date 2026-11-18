@@ -4,6 +4,8 @@ Agents add open questions here. Ahmed answers inline and moves resolved items to
 
 | Task | Question | Options | Recommended default | Answer |
 | --- | --- | --- | --- | --- |
+| T1.3 | How should partially applied DDL, lock contention and an older deployed binary behave? | Automatically replay incomplete DDL; stop for operator reconciliation | Persist a started journal entry before up; an unfinished entry blocks replay and later migrations. Use a zero-timeout session advisory lock, reject unknown applied migrations/downgrades, and update the plugin-level version marker only after success. Activation fails with a localized message; normal requests fail closed for the plugin until repaired. Recovery requires an operator to reconcile the actual schema, never automatic deletion of history | Pending; reversible infrastructure defaults applied; see MIGRATIONS.md |
+| T1.3 | Where are migrations discovered and which version triggers upgrades? | Per-module independent histories; one ordered root directory | One global catalog of numbered files returning Migration instances under migrations/, with duplicate numbers rejected before DB writes. Read the existing plugin header version, check rm_schema_version on init, and recheck the persisted marker under the lock. Activation always verifies the journal. Empty module migration metadata remains reserved until modules introduce migrations | Pending; reversible registration/lifecycle defaults applied |
 | T1.2 | Audit/outbox tables and writers arrive in T1.6/T1.7. How should UnitOfWork persist batches before those tasks? | Add the schemas early; require an injected flusher and defer production binding | Require an explicit flusher that uses the same Connection before commit, with no default no-op. Keep payloads opaque and test real writes in disposable fixtures; add durable writers in their planned tasks | Pending; reversible infrastructure default applied, see DB.md |
 | T1.2 | wpdb can reconnect/replay a query after transaction loss. Which execution path should the prepared facade use? | Standard wpdb query replay; wpdb preparation with direct use of its existing mysqli handle | Use wpdb prepare/remove_placeholder_escape with the existing native handle, sanitized last_error and numeric errno; no reconnect/replay or ambiguous-error retries. Failed savepoint rollback poisons the wrapper | Pending; reversible infrastructure adapter default applied, see DB.md |
 | T1.1 | Which defaults should the minimal container and currently unused module metadata use? | Require an explicit lifetime for every registration; singleton defaults with explicit transient opt-in | set accepts instances or project class bindings; factory accepts a registration closure with Lifetime::Singleton by default; implicit autowiring is singleton per container. Declared constructor defaults take precedence; required scalar/untyped/union/intersection/reference parameters need a factory. ModuleDefinition services is an optional registration callback; routes/migrations/listeners/jobs remain opaque lists until their tasks define contracts | Pending; reversible infrastructure defaults applied and documented in CONTAINER.md |
@@ -30,6 +32,13 @@ text until they are moved here after PR #25 merges). The recommended defaults st
 - T1.1 — container defaults, **with the review follow-ups in PLAN.md T1.5**: scoped lifetime per `AccountContext` (no singletons that depend on it) and a registered service wins over a constructor default.
 - T1.2 — mandatory pre-commit flusher until T1.6/T1.7; WordPress prepare + native `mysqli` execution without reconnect/replay.
 
+
+T1.3 finding 1 — Ahmed requires plugin-only schema gating: busy init requests return quietly;
+real failures persist sanitized non-autoloaded metadata and suppress same-version automatic
+retries. WordPress remains available; administrators recover through System Health. T1.9 REST
+and T2.6 app surfaces must consult SchemaGate and return 503 with Retry-After when unavailable.
+This supersedes the original whole-site failure behavior; incomplete DDL still requires manual
+schema/journal reconciliation, never automatic history deletion.
 
 T0.8 verification (no new decision): IBM Plex Sans Arabic Regular and Bold from the pinned
 Google Fonts distribution (see assets/fonts/README.md) render joined Arabic correctly with

@@ -15,7 +15,7 @@ cd "$root"
 test -f vendor-prefixed/autoload.php
 test -f build/manifest.json
 cp rental-manager.php "$runtime/"
-cp -R src languages assets build "$runtime/"
+cp -R src languages assets build migrations "$runtime/"
 # Exclude resources from the staged copy only. Composer's installed libraries stay intact.
 tar -cf - \
   --exclude='*/ttfonts' --exclude='*/data/font' --exclude='*/data/collations' \
